@@ -97,17 +97,6 @@
 .sd .explain b{color:var(--color-fg)}
 .sd .red{color:var(--color-bad)}.sd .green{color:var(--color-ok)}
 .sd .legend{display:flex;flex-wrap:wrap;gap:var(--cds-gap-sm) var(--cds-gap-md);font-size:var(--sd-fs);color:var(--color-fg-muted);margin-bottom:var(--cds-gap-sm)}
-.sd .foot{border-top:1px solid var(--color-border-line);padding-top:var(--cds-pad-md);color:var(--color-fg-muted)}
-.sd .foot h3{margin:0 0 var(--cds-gap-xs);font-size:calc(var(--sd-fs) * .9);font-weight:var(--cds-font-weight-medium);color:var(--color-fg-muted)}
-.sd ul.hl{margin:0;padding-left:1.2em;font-size:calc(var(--sd-fs) * .85);line-height:1.6}
-.sd ul.hl li{margin-bottom:2px}
-.sd ul.hl b{color:var(--color-fg);font-weight:var(--cds-font-weight-medium)}
-.sd .hl-old{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,28rem),1fr));gap:var(--cds-gap-md)}
-.sd .hl .card h3{margin:0 0 var(--cds-gap-xs);font-size:var(--sd-h);font-weight:var(--cds-font-weight-medium)}
-.sd .hl .card p{margin:0;font-size:var(--sd-fs);line-height:1.55}
-.sd .hl .card{border-left:3px solid var(--color-border-line)}
-.sd .hl .card.good{border-left-color:var(--color-ok)}
-.sd .hl .card.warn{border-left-color:var(--color-warn)}
 .sd .pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:var(--sd-fs);border:1px solid currentColor}
 .sd .pill.fix{color:var(--color-ok)}.sd .pill.chk{color:var(--color-warn)}.sd .pill.info{color:var(--color-fg-muted)}
 [data-dash-source-state=refreshing]{opacity:.5;transition:opacity var(--cds-dur-slow)}
@@ -167,11 +156,6 @@
         <tbody></tbody>
       </table>
     </div>
-  </section>
-
-  <section id="highlights" class="foot">
-    <h3>หมายเหตุ · จุดที่น่าสนใจ</h3>
-    <ul class="hl" id="hl-grid" data-source="highlights"></ul>
   </section>
 </div>
 </div>
@@ -294,38 +278,6 @@ dash.calc('tambon', {
     }
     out.push({key: 'รวม', level: 'all', name: 'รวมทั้งหมด', ...summarize(attendance, [...new Set(attendance.map(r => r.tambon))])});
     return out;
-  }
-});
-
-dash.calc('highlights', {
-  title: 'จุดที่น่าสนใจ',
-  description: 'ข้อสังเกตที่คำนวณจากยอดรายเดือน รายตำบล และโทกังจากฐานข้อมูล BKK11-tokan',
-  inputs: ['monthly', 'tambon', 'tokan', 'attendance'],
-  fn: (monthly, tambon, tokan, attendance) => {
-    const pc = (v) => (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
-    const M = (s) => monthly.filter(r => r.scope === s && r.kind === 'month');
-    const R = M('รวมภาค'), B = M('บางขุนเทียน'), N = M('บางบอน');
-    const S = (s) => monthly.find(r => r.key === s + '|รวม');
-    const peak = R.reduce((a,b) => b.total > a.total ? b : a);
-    const pb = B.find(r => r.month === peak.month);
-    const pt = attendance.filter(r => Number(r.month) === peak.month).reduce((a,b) => Number(b.total) > Number(a.total) ? b : a);
-    const tok = (c, ph) => tokan.filter(r => r.phak === ph).reduce((s,r) => s + Number(r[c]), 0);
-    const rate = (c, ph) => (S(ph)[c] / M(ph).length / tok(c, ph) * 100).toFixed(1);
-                    const TB = tambon.filter(t => t.level === 'tambon');
-    const down = [...TB].sort((a,b) => a.trend - b.trend).slice(0,2);
-    const up = [...TB].sort((a,b) => b.trend - a.trend).slice(0,3);
-    const SR = S('รวมภาค'), CH = monthly.find(r => r.key === 'รวมภาค|เทียบ2568');
-    const fxs = [['md','ผช'],['wd','ผญ'],['ymd','ยช'],['ywd','ยญ'],['mb','มช'],['mg','มญ']].map(([c, n]) => ({n, v: CH[c]})).sort((a,b) => b.v - a.v);
-    const TY = tambon.filter(t => t.level === 'tambon' && t.yoy != null);
-    const yUp = [...TY].sort((a,b) => b.yoy - a.yoy).slice(0,3), yDn = [...TY].sort((a,b) => a.yoy - b.yoy).slice(0,3);
-    const PH = (ph) => S(ph);
-    return [
-      {id:'yoy', tone: SR.total >= SR.p_total ? 'good' : 'warn', title:'เทียบปีที่แล้ว ' + pc(SR.chg_total), text: R[0].month_name + '–' + R[R.length-1].month_name + ' ปีนี้ ' + SR.total.toLocaleString('en') + ' คน · ปี 2568 ' + SR.p_total.toLocaleString('en') + ' คน · บางบอน ' + pc(PH('บางบอน').chg_total) + ' · บางขุนเทียน ' + pc(PH('บางขุนเทียน').chg_total)},
-      {id:'fxyoy', tone:'', title:'ฝ่ายไหนโตจากปีที่แล้ว', text: 'โตมากสุด: ' + fxs.slice(0,2).map(x => x.n + ' ' + pc(x.v)).join(', ') + ' · ' + (fxs[fxs.length-1].v < 0 ? 'ลดลง: ' : 'โตน้อยสุด: ') + fxs.filter((x, i) => x.v < 0 || i === fxs.length-1).map(x => x.n + ' ' + pc(x.v)).join(', ') + ' · เพื่อนสมาชิกใหม่ ' + pc(CH.new)},
-      {id:'tbyoy', tone:'warn', title:'ตำบลเทียบปีที่แล้ว', text: 'โตมากสุด: ' + yUp.map(t => t.tambon + ' ' + pc(t.yoy)).join(', ') + ' · ลดลงมากสุด: ' + yDn.map(t => t.tambon + ' ' + pc(t.yoy)).join(', ')},
-      {id:'growth', tone:'good', title:'ผู้มาร่วมเพิ่มขึ้นเล็กน้อย', text: (() => { const mem = (r) => r.total - r.new; const av = (ms) => Math.round(R.filter(r => ms.includes(r.month)).reduce((s,r) => s + mem(r), 0) / ms.length); const q1 = av([1,2,3]), end = av([8,9]); return 'เฉลี่ย ' + q1 + ' → ' + av([4,6]) + ' → ' + end + ' คน/เดือน (+' + Math.round((end / q1 - 1) * 100) + '%) ทั้งสองภาค · ไม่นับ พ.ค./ก.ค. ที่มีงานพิเศษ · ยังแกว่ง ควรรอดู ต.ค.–ธ.ค.'; })()},
-      {id:'peak', tone:'good', title: peak.month_name + ' คือจุดพีคของปี', text: 'ยอดรวม ' + peak.total + ' คน · เพื่อนสมาชิกใหม่ ' + peak.new + ' คน · ตำบล' + pt.tambon + ' ' + pt.total + ' คน'},
-    ];
   }
 });
 
@@ -552,18 +504,6 @@ dash.onData(() => {
   } else tb.replaceChildren();
 
   colorCols(document.getElementById('monthly-table'));
-
-  // Highlights
-  const h = dash.data('highlights'); const g = document.getElementById('hl-grid');
-  g.replaceChildren();
-  if (h.status === 'ok') {
-    for (const r of h.data) {
-      const c = document.createElement('li'); c.id = 'hl-' + r.id;
-      const t = document.createElement('b'); t.textContent = r.title; t.setAttribute('data-source','highlights'); t.setAttribute('data-field','title'); t.setAttribute('data-where','id=' + r.id);
-      const p = document.createElement('span'); p.textContent = r.text; p.setAttribute('data-source','highlights'); p.setAttribute('data-field','text'); p.setAttribute('data-where','id=' + r.id);
-      c.append(t, ' — ', p); g.appendChild(c);
-    }
-  } else if (h.status === 'error') { const d = document.createElement('div'); d.className='fail'; d.textContent='Failed to load'; g.appendChild(d); }
 
   // Tambon
   applyCols();
