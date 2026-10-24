@@ -4,25 +4,1216 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dashboard รวมภาค 11</title>
-<style>
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, "Sarabun", "Noto Sans Thai", sans-serif; background: #f2f4f7; color: #1a1a1a; font-size: 18px; }
-  header { background: #0b5cad; color: #fff; padding: 22px 16px; text-align: center; }
-  header h1 { margin: 0; font-size: 28px; }
-  main { max-width: 1000px; margin: 0 auto; padding: 18px 16px 40px; display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
-  a.c { display: block; background: #fff; border: 3px solid #c3c9d2; border-radius: 16px; padding: 20px; color: inherit; text-decoration: none; }
-  a.c:hover, a.c:focus-visible { border-color: #0b5cad; }
-  a.c h2 { margin: 0 0 6px; font-size: 24px; }
-  a.c p { margin: 0; color: #555; font-size: 16px; }
-</style>
+<link rel="stylesheet" href="dash.css">
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 </head>
 <body>
-<header><h1>Dashboard รวมภาค 11</h1></header>
-<main>
-  <a class="c" href="4division.html">
-    <h2>📷 สนทนาธรรม 4 ฝ่าย</h2>
-    <p>สถานะการส่งรูปประจำเดือนของแต่ละพื้นที่</p>
-  </a>
-</main>
+<script src="dash.js"></script>
+<div id="dash-root">
+<script src="h2i.js"></script>
+<style>
+@font-face{font-family:'SD Prompt';font-style:normal;font-weight:400;font-display:swap;src:url('fonts/th-400.woff2') format('woff2');unicode-range:U+02D7,U+0303,U+0331,U+0E01-0E5B,U+200C-200D,U+25CC}
+@font-face{font-family:'SD Prompt';font-style:normal;font-weight:600;font-display:swap;src:url('fonts/th-600.woff2') format('woff2');unicode-range:U+02D7,U+0303,U+0331,U+0E01-0E5B,U+200C-200D,U+25CC}
+@font-face{font-family:'SD Prompt';font-style:normal;font-weight:400;font-display:swap;src:url('fonts/lat-400.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'SD Prompt';font-style:normal;font-weight:600;font-display:swap;src:url('fonts/lat-600.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+.sd{--cds-font-weight-medium:600;--sd-fs:calc(var(--cds-font-size-body) * 1.75);--sd-h:calc(var(--cds-font-size-heading) * 1.7);--sd-t:calc(var(--cds-font-size-title) * 1.8);font-size:var(--sd-fs);line-height:1.5;font-family:'SD Prompt', var(--font-anthropic-sans);display:flex;flex-direction:column;gap:var(--cds-gap-lg)}
+.sd h1{font-family:'SD Prompt', var(--font-anthropic-sans);font-weight:600;font-size:var(--sd-t);margin:0}
+.sd .lede{color:var(--color-fg-muted);margin:var(--cds-gap-xs) 0 0;font-size:var(--sd-fs);max-width:60rem}
+.sd h2{font-size:var(--sd-h);font-weight:var(--cds-font-weight-medium);margin:0 0 var(--cds-gap-md)}
+.sd .note{color:var(--color-fg-muted);font-size:var(--sd-fs);margin:var(--cds-gap-xs) 0 var(--cds-gap-md)}
+.sd .card{background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:var(--cds-radius);padding:var(--cds-pad-lg);min-width:0}
+.sd .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr));gap:var(--cds-gap-md)}
+.sd .tile .lab{font-size:var(--sd-fs);color:var(--color-fg-muted)}
+.sd .tile .big{font-family:'SD Prompt', var(--font-anthropic-sans);font-weight:600;font-size:var(--sd-t);font-variant-numeric:tabular-nums;margin-top:var(--cds-gap-xs)}
+.sd .tile .yoy{font-size:var(--sd-fs);margin-top:var(--cds-gap-xs);font-weight:var(--cds-font-weight-medium)}
+.sd .yoy.up,.sd td.up{color:var(--color-ok)}.sd .yoy.down,.sd td.down{color:var(--color-bad)}
+.sd tr.psum td{background:var(--color-bg);color:var(--color-fg-muted)}
+.sd tr.chg td{background:var(--color-bg);font-weight:var(--cds-font-weight-medium)}
+.sd .tile .sub{font-size:var(--sd-fs);color:var(--color-fg-muted);margin-top:var(--cds-gap-xs)}
+.sd .seg{display:flex;flex-wrap:wrap;gap:var(--cds-gap-sm);margin-bottom:var(--cds-gap-lg)}
+.sd .seg button{font:inherit;font-size:var(--sd-fs);padding:var(--cds-pad-xs) var(--cds-pad-md);border-radius:999px;border:1px solid var(--color-border-line);background:var(--color-bg);color:var(--color-fg);cursor:pointer}
+.sd .seg button[aria-pressed=true]{background:var(--color-fg);color:var(--color-bg);border-color:var(--color-fg)}
+.sd .tw{overflow:auto;max-height:75vh}
+.sd .tw thead th{padding-top:calc(var(--cds-pad-sm) + 6px);vertical-align:bottom;position:sticky;top:0;z-index:1;background:var(--color-panel);box-shadow:inset 0 -2px 0 var(--color-border-line)}
+.sd .tw th:first-child,.sd .tw td:first-child{position:sticky;left:0;background:var(--color-panel)}
+.sd .tw thead th:first-child{z-index:2}
+.sd .tw tr.top td:first-child{background:color-mix(in srgb, var(--color-ok) 11%, var(--color-panel))}
+.sd .tw tr.sum td:first-child,.sd .tw tr.grp-khet td:first-child{background:var(--color-bg)}
+.sd table{border-collapse:separate;border-spacing:0;width:100%;font-size:var(--sd-fs);font-variant-numeric:tabular-nums}
+.sd th,.sd td{padding:var(--cds-pad-sm) var(--cds-pad-sm);text-align:right;border-bottom:1px solid var(--color-border-line);white-space:nowrap}
+.sd th{color:var(--color-fg-muted);font-weight:var(--cds-font-weight-medium)}
+.sd th .u{display:block;font-weight:400;font-size:.8em;opacity:.85}
+.sd th:first-child,.sd td:first-child,.sd td.l,.sd th.l{text-align:left}
+.sd tr.top td{background:color-mix(in srgb, var(--color-ok) 11%, transparent)}
+.sd .badge{display:inline-block;margin-left:6px;padding:0 6px;border-radius:999px;font-size:var(--sd-fs);color:var(--color-ok);border:1px solid currentColor;font-weight:var(--cds-font-weight-medium)}
+.sd tr.grp-phak td:first-child,.sd tr.grp-khet td:first-child,.sd tr.grp-all td:first-child{text-align:left}
+.sd tr.grp-all td{font-weight:var(--cds-font-weight-medium);font-size:var(--sd-h);border-top:2px solid var(--color-fg);background:var(--color-bg)}
+.sd tr.grp-phak td,.sd tr.grp-khet td{text-align:left}
+.sd tr.grp-phak td{font-weight:var(--cds-font-weight-medium);font-size:var(--sd-h);padding-top:var(--cds-pad-lg);color:var(--color-fg);border-bottom:2px solid var(--color-fg)}
+.sd tr.grp-khet td{font-weight:var(--cds-font-weight-medium);color:var(--color-fg-muted);background:var(--color-bg)}
+.sd td.tb{padding-left:var(--cds-pad-lg)}
+.sd tr.sum td{font-weight:var(--cds-font-weight-medium);background:var(--color-bg)}
+.sd td.hot{color:var(--color-ok);font-weight:var(--cds-font-weight-medium)}
+.sd td.cold{color:var(--color-bad)}
+.sd td.prev,.sd th.prev{color:var(--color-fg-muted);font-size:.9em}
+.sd .tb-tools{display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--cds-gap-sm) var(--cds-gap-lg);margin-bottom:var(--cds-gap-lg)}
+.sd .tb-tools .seg{margin-bottom:0}
+.sd .colmgr{position:relative}
+.sd .colmgr summary{list-style:none;cursor:pointer;font-size:var(--sd-fs);padding:var(--cds-pad-xs) var(--cds-pad-md);border-radius:999px;border:1px solid var(--color-border-line);background:var(--color-bg);color:var(--color-fg)}
+.sd .colmgr summary::-webkit-details-marker{display:none}
+.sd .colmgr summary::before{content:"☰  "}
+.sd .colmgr[open] summary{background:var(--color-fg);color:var(--color-bg)}
+.sd .colmgr-box{position:absolute;z-index:5;top:calc(100% + 6px);left:0;min-width:20rem;max-height:70vh;overflow:auto;background:var(--cds-surface-popover);border:1px solid var(--cds-border);border-radius:var(--cds-radius);box-shadow:var(--cds-shadow-popover);padding:var(--cds-pad-md)}
+.sd .colmgr-acts{display:flex;gap:var(--cds-gap-sm);margin-bottom:var(--cds-gap-sm)}
+.sd .colmgr-acts button{font:inherit;font-size:calc(var(--sd-fs) * .85);padding:2px 10px;border-radius:999px;border:1px solid var(--color-border-line);background:var(--color-bg);color:var(--color-fg);cursor:pointer}
+.sd #colmgr-list label{display:flex;align-items:center;gap:10px;padding:6px 2px;cursor:pointer;white-space:nowrap}
+.sd #colmgr-list input{width:1.2em;height:1.2em;accent-color:var(--color-fg)}
+.sd #colmgr-list .sw{margin:0}
+.sd .sec-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--cds-gap-sm);margin-bottom:var(--cds-gap-md)}
+.sd .sec-head h2{margin:0}
+.sd .exp-btn{font:inherit;font-size:calc(var(--sd-fs) * .85);padding:var(--cds-pad-xs) var(--cds-pad-md);border-radius:999px;border:1px solid var(--color-border-line);background:var(--color-bg);color:var(--color-fg);cursor:pointer}
+.sd .exp-btn[disabled]{opacity:.6;cursor:progress}
+.sd .exp-out:empty{display:none}
+.sd .exp-out{margin-bottom:var(--cds-gap-lg);padding:var(--cds-pad-md);border:1px dashed var(--color-border-line);border-radius:var(--cds-radius);font-size:calc(var(--sd-fs) * .85);color:var(--color-fg-muted)}
+.sd .exp-out img{display:block;max-width:100%;max-height:60vh;margin-top:var(--cds-gap-sm);border:1px solid var(--color-border-line);border-radius:var(--cds-radius)}
+.sd .exp-out .row{display:flex;flex-wrap:wrap;gap:var(--cds-gap-sm);align-items:center;justify-content:space-between}
+.sd .exp-out a,.sd .exp-out button{font:inherit;color:var(--color-fg)}
+.sd .exporting .tw{max-height:none !important;overflow:visible !important}
+.sd .exporting .tw thead th,.sd .exporting .tw th:first-child,.sd .exporting .tw td:first-child{position:static !important}
+.sd .chk{display:flex;align-items:center;gap:8px;font-size:var(--sd-fs);cursor:pointer;color:var(--color-fg)}
+.sd .chk input{width:1.2em;height:1.2em;accent-color:var(--color-fg)}
+.sd tr.yr td{background:var(--color-bg);font-weight:var(--cds-font-weight-medium);text-align:left}
+.sd td.wrap{white-space:normal;min-width:12rem}
+.sd .chart{position:relative;min-height:520px}
+.sd .tip{position:absolute;pointer-events:none;background:var(--cds-surface-popover);border:1px solid var(--cds-border);border-radius:var(--cds-radius);box-shadow:var(--cds-shadow-popover);padding:var(--cds-pad-xs) var(--cds-pad-sm);font-size:var(--sd-fs);display:none;z-index:2;min-width:9rem}
+.sd .tip .d{color:var(--cds-text-secondary);margin-bottom:2px}
+.sd .tip .r{display:flex;gap:6px;align-items:center;justify-content:space-between}
+.sd .sw{display:inline-block;width:16px;height:16px;border-radius:2px;margin-right:4px}
+.sd .filters{display:flex;flex-wrap:wrap;align-items:center;gap:var(--cds-gap-sm) var(--cds-gap-lg);margin-bottom:var(--cds-gap-lg)}
+.sd .filters .seg{margin-bottom:0}
+.sd .khet-pick{font-size:var(--sd-fs);color:var(--color-fg-muted);display:flex;align-items:center;gap:6px}
+.sd .khet-pick select{font:inherit;font-size:var(--sd-fs);padding:var(--cds-pad-xs) var(--cds-pad-sm);border-radius:var(--cds-radius);border:1px solid var(--color-border-line);background:var(--color-bg);color:var(--color-fg)}
+.sd .explain{margin:var(--cds-gap-xs) 0 var(--cds-gap-md);padding-left:1.2em;color:var(--color-fg-muted);font-size:var(--sd-fs);line-height:1.6}
+.sd .explain b{color:var(--color-fg)}
+.sd .red{color:var(--color-bad)}.sd .green{color:var(--color-ok)}
+.sd .legend{display:flex;flex-wrap:wrap;gap:var(--cds-gap-sm) var(--cds-gap-md);font-size:var(--sd-fs);color:var(--color-fg-muted);margin-bottom:var(--cds-gap-sm)}
+.sd .foot{border-top:1px solid var(--color-border-line);padding-top:var(--cds-pad-md);color:var(--color-fg-muted)}
+.sd .foot h3{margin:0 0 var(--cds-gap-xs);font-size:calc(var(--sd-fs) * .9);font-weight:var(--cds-font-weight-medium);color:var(--color-fg-muted)}
+.sd ul.hl{margin:0;padding-left:1.2em;font-size:calc(var(--sd-fs) * .85);line-height:1.6}
+.sd ul.hl li{margin-bottom:2px}
+.sd ul.hl b{color:var(--color-fg);font-weight:var(--cds-font-weight-medium)}
+.sd .hl-old{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,28rem),1fr));gap:var(--cds-gap-md)}
+.sd .hl .card h3{margin:0 0 var(--cds-gap-xs);font-size:var(--sd-h);font-weight:var(--cds-font-weight-medium)}
+.sd .hl .card p{margin:0;font-size:var(--sd-fs);line-height:1.55}
+.sd .hl .card{border-left:3px solid var(--color-border-line)}
+.sd .hl .card.good{border-left-color:var(--color-ok)}
+.sd .hl .card.warn{border-left-color:var(--color-warn)}
+.sd .pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:var(--sd-fs);border:1px solid currentColor}
+.sd .pill.fix{color:var(--color-ok)}.sd .pill.chk{color:var(--color-warn)}.sd .pill.info{color:var(--color-fg-muted)}
+[data-dash-source-state=refreshing]{opacity:.5;transition:opacity var(--cds-dur-slow)}
+.sd .fail{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--color-fg-muted);font-size:var(--sd-fs);min-height:inherit}
+.sd .fail::before{content:"";width:.375rem;height:.375rem;border-radius:50%;background:var(--color-bad)}
+</style>
+
+<style>
+.app { --sd-fs: calc(var(--cds-font-size-body) * 1.75); --sd-h: calc(var(--cds-font-size-heading) * 1.7); --sd-t: calc(var(--cds-font-size-title) * 1.8); }
+.mr { --cds-font-size-caption: calc(var(--sd-fs) * .85); --cds-font-size-body: var(--sd-fs); --cds-font-size-heading: var(--sd-h); --cds-font-size-title: var(--sd-t); --cds-font-weight-medium: 600; line-height: 1.5; font-family: 'SD Prompt', var(--font-anthropic-sans), "Noto Sans Thai", system-ui, sans-serif; display: flex; flex-direction: column; gap: var(--cds-gap-lg); }
+.mr h1 { font-family: 'SD Prompt', var(--font-anthropic-sans), sans-serif; font-weight: 600; font-size: var(--cds-font-size-title); margin: 0; }
+.mr-take { color: var(--color-fg-muted); font-size: var(--cds-font-size-body); margin: var(--cds-gap-xs) 0 0; line-height: 1.6; }
+.mr-take .mr-v { color: var(--color-fg); font-weight: 600; }
+.mr-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: var(--cds-gap-md); }
+.mr-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; }
+.mr-card h3 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.mr-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: var(--cds-gap-xs) 0 var(--cds-gap-sm); line-height: 1.5; }
+.mr-sec > h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0 0 var(--cds-gap-sm); }
+.mr-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--cds-gap-sm); margin-top: var(--cds-gap-sm); }
+.mr-total { border-color: var(--mr-c1); }
+.mr-kpi .lbl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.mr button, .mr input { font-family: inherit; }
+.mr-kpi .val { font-family: 'SD Prompt', var(--font-anthropic-sans), sans-serif; font-weight: 600; font-size: var(--sd-t); font-variant-numeric: tabular-nums; line-height: 1.2; }
+.mr-kpi .sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.mr-tag { display: inline-block; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); border: 1px solid var(--color-border-line); border-radius: 999px; padding: 0 var(--cds-pad-sm); margin-left: var(--cds-gap-xs); font-weight: 400; vertical-align: middle; }
+.mr-chart { position: relative; min-height: 400px; }
+.mr-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-md); font-size: var(--sd-fs); color: var(--color-fg-muted); margin-bottom: var(--cds-gap-xs); }
+.mr-sw { display: inline-block; width: 16px; height: 16px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.mr-tick { fill: var(--color-fg-muted); font-size: calc(var(--sd-fs) * .9); }
+.mr-vlab { fill: #fff; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; pointer-events: none; }
+.mr-vlab-out { fill: var(--color-fg-muted); font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; pointer-events: none; }
+.mr-noteLab { fill: var(--color-fg-muted); font-size: var(--cds-font-size-caption); font-style: italic; pointer-events: none; }
+.mr-tip { position: absolute; z-index: 5; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); pointer-events: none; white-space: nowrap; }
+.mr-tip-h { color: var(--cds-text-secondary); margin-bottom: 2px; }
+.mr-tip .mr-b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.mr-fail { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: inherit; height: 100%; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.mr-fail i { width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+.mr-search { width: 100%; box-sizing: border-box; padding: var(--cds-pad-xs) var(--cds-pad-sm); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); color: var(--color-fg); font: inherit; margin-bottom: var(--cds-gap-sm); }
+.mr-tbox { max-height: 75vh; overflow: auto; }
+.mr-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-body); font-variant-numeric: tabular-nums; }
+.mr-table th { position: sticky; top: 0; background: var(--color-panel); text-align: left; border-bottom: 1px solid var(--color-border-line); padding: 0; z-index: 1; }
+.mr-table th button { all: unset; cursor: pointer; display: block; width: 100%; box-sizing: border-box; padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.mr-table td { padding: var(--cds-pad-sm) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); }
+.mr-table td.num { white-space: nowrap; }
+.mr-zero td { color: var(--color-fg-muted); }
+.mr-table th.mr-m, .mr-table td.mr-m { text-align: center; }
+.mr-table th.mr-m button { text-align: center; padding-inline: 4px; }
+.mr-table td.mr-m { color: var(--mr-c1); font-weight: 600; padding-inline: 4px; }
+.mr-grid-t td, .mr-grid-t th { white-space: nowrap; }
+@media (max-width: 560px) { .mr-hide-sm { display: none; } }
+.mr-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--cds-gap-sm) var(--cds-gap-md); }
+.mr-export { display: flex; flex-wrap: wrap; align-items: center; gap: var(--cds-gap-sm); }
+.mr-btn { font: inherit; font-size: calc(var(--sd-fs) * .85); color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: 999px; padding: var(--cds-pad-xs) var(--cds-pad-md); cursor: pointer; }
+.mr-btn:hover { border-color: var(--mr-c1); }
+.mr-btn:disabled { opacity: .5; cursor: progress; }
+.mr-export-status { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.mr-exporting .mr-tbox { max-height: none; overflow: visible; }
+.mr-exporting .mr-table th { position: static; }
+.mr-exporting .mr-search, .mr-exporting .mr-export { display: none; }
+.mr-exporting-summary #bkt-members-sec, .mr-exporting-summary #bb-members-sec { display: none; }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+<style>
+.tabs-top{display:flex;flex-wrap:wrap;gap:var(--cds-gap-sm);margin-bottom:var(--cds-gap-lg);font-family:'SD Prompt', var(--font-anthropic-sans)}
+.tabs-top button{font:inherit;font-size:calc(var(--cds-font-size-body) * 1.5);padding:var(--cds-pad-sm) var(--cds-pad-lg);border-radius:999px;border:1px solid var(--color-border-line);background:var(--color-bg);color:var(--color-fg);cursor:pointer}
+.tabs-top button[aria-selected=true]{background:var(--color-fg);color:var(--color-bg);border-color:var(--color-fg)}
+.tabpane[hidden]{display:none !important}
+</style>
+<div class="app">
+<nav class="tabs-top" role="tablist" aria-label="เลือกหน้า"><button type="button" role="tab" id="tab-dialog" data-tab="dialog">สนทนาธรรม 4 ฝ่าย</button><button type="button" role="tab" id="tab-mirai" data-tab="mirai">มิไรบุ</button></nav>
+<div class="tabpane" data-tab="dialog">
+<div class="sd">
+  <header id="top">
+    <h1>สนทนาธรรม 4 ฝ่าย รวมภาคกรุงเทพ 11</h1>
+  </header>
+
+  <section class="tiles" id="kpis">
+    <div class="card tile"><div class="lab">ผู้เข้าร่วมรวม 9 เดือน (คน)</div><div class="big dash-skeleton" data-source="kpi" data-field="total">—</div><div class="sub">จำนวนคนสะสม</div><div class="yoy dash-skeleton" data-source="kpi" data-field="total_yoy">—</div></div>
+    <div class="card tile"><div class="lab">เฉลี่ยต่อเดือน (คน)</div><div class="big dash-skeleton" data-source="kpi" data-field="avg">—</div><div class="sub">ม.ค.–ก.ย.</div><div class="yoy dash-skeleton" data-source="kpi" data-field="avg_yoy">—</div></div>
+    <div class="card tile"><div class="lab">เดือนที่สูงสุด (คน)</div><div class="big dash-skeleton" data-source="kpi" data-field="peak_total">—</div><div class="sub dash-skeleton" data-source="kpi" data-field="peak_month">—</div><div class="yoy dash-skeleton" data-source="kpi" data-field="peak_yoy">—</div></div>
+    <div class="card tile"><div class="lab">เดือนล่าสุด ก.ย. (คน)</div><div class="big dash-skeleton" data-source="kpi" data-field="last_total">—</div><div class="sub dash-skeleton" data-source="kpi" data-field="last_delta_text">—</div><div class="yoy dash-skeleton" data-source="kpi" data-field="last_yoy">—</div></div>
+  </section>
+
+  <section class="card" id="monthly-section">
+    <div class="sec-head"><h2>ยอดแยกตามฝ่าย รายเดือน</h2><button type="button" class="exp-btn no-export" data-target="monthly-section" data-name="ยอดแยกตามฝ่ายรายเดือน">📷 บันทึกเป็นภาพ</button></div>
+    <div class="exp-out no-export"></div>
+    
+    <div class="filters"><div class="seg" id="scope-btns" role="group" aria-label="เลือกภาค"></div>
+    <label class="khet-pick">เขต <select id="khet-sel" data-source="monthly" aria-label="เลือกเขต"><option value="">ทุกเขต</option></select></label>
+    <label class="chk"><input type="checkbox" id="opt-tl"> แสดงต่อเนื่องตั้งแต่ปี 2568</label>
+    <label class="chk"><input type="checkbox" id="opt-new"> ดูเฉพาะเพื่อนสมาชิกใหม่</label></div>
+    <div class="legend" id="legend"></div>
+    <div class="chart" id="chart" data-source="monthly"><div class="tip no-export"></div></div>
+    <div class="tw" style="margin-top:var(--cds-gap-md)">
+      <table id="monthly-table" data-source="monthly" data-row-key="key">
+        <thead><tr id="mt-head"></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <section class="card" id="tambon-section">
+    <div class="sec-head"><h2 id="tb-title">รายตำบล · เฉลี่ยต่อเดือน (ม.ค.–ก.ย.)</h2><button type="button" class="exp-btn no-export" data-target="tambon-section" data-name="รายตำบล">📷 บันทึกเป็นภาพ</button></div>
+    <div class="exp-out no-export"></div>
+    <div class="tb-tools"><div class="seg" id="level-btns" role="group" aria-label="เลือกระดับ"></div>
+    <details class="colmgr no-export"><summary>เลือกคอลัมน์</summary><div class="colmgr-box"><div class="colmgr-acts"><button type="button" id="col-all">แสดงทั้งหมด</button><button type="button" id="col-none">ซ่อนทั้งหมด</button></div><div id="colmgr-list"></div></div></details></div>
+    <style id="colhide"></style>
+    <div class="tw">
+      <table id="tambon-table" data-source="tambon" data-row-key="key">
+        <thead><tr>
+          <th data-field="name" id="tb-namehead">ตำบล</th><th data-field="md">ผช<span class="u">(คน/เดือน)</span></th><th data-field="wd">ผญ<span class="u">(คน/เดือน)</span></th><th data-field="ymd">ยช<span class="u">(คน/เดือน)</span></th><th data-field="ywd">ยญ<span class="u">(คน/เดือน)</span></th><th data-field="mb">มช<span class="u">(คน/เดือน)</span></th><th data-field="mg">มญ<span class="u">(คน/เดือน)</span></th><th data-field="new">เพื่อนสมาชิกใหม่<span class="u">(คน/เดือน)</span></th><th data-field="total">รวม<span class="u">(คน/เดือน)</span></th><th data-field="p_total">ปี 2568<span class="u">(คน/เดือน)</span></th><th data-field="yoy">เทียบปีที่แล้ว<span class="u">(%)</span></th><th data-field="tokan">โทกัง<span class="u">(คน)</span></th><th data-field="rate">มาร่วม<br>เทียบโทกัง<span class="u">(%)</span></th><th data-field="trend">แนวโน้ม<br>เทียบปีที่แล้ว<span class="u">(คน/เดือน)</span></th><th data-field="trend_new">แนวโน้มเพื่อนสมาชิกใหม่<br>เทียบปีที่แล้ว<span class="u">(คน/เดือน)</span></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="highlights" class="foot">
+    <h3>หมายเหตุ · จุดที่น่าสนใจ</h3>
+    <ul class="hl" id="hl-grid" data-source="highlights"></ul>
+  </section>
+</div>
+</div>
+<div class="tabpane" data-tab="mirai" hidden>
+<div class="mr">
+  <header>
+    <div class="mr-head">
+      <h1 id="mr-title">รายงานมิไรบุ 2026 รวมภาค 11</h1>
+      <div class="mr-export mr-noexport">
+        <button type="button" class="mr-btn" data-export="summary">บันทึกเป็นภาพ (สรุป)</button>
+        <button type="button" class="mr-btn" data-export="full">บันทึกเป็นภาพ (ฉบับเต็ม)</button>
+        <span class="mr-export-status" id="mr-export-status" aria-live="polite"></span>
+      </div>
+    </div>
+    <p class="mr-take" id="takeaway">ม.ค.–ต.ค. 2026 รวมภาค 11 มีน้องมาร่วมเฉลี่ย <span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="avg" data-where="region=รวมภาค 11" data-fmt="1f">—</span> คนต่อเดือน โดยภาคบางขุนเทียนมาร่วมเฉลี่ย <span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="avg" data-where="region=บางขุนเทียน" data-fmt="1f">—</span> คนต่อครั้ง ส่วนภาคบางบอน <span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="avg" data-where="region=บางบอน" data-fmt="1f">—</span> คนต่อครั้ง — น้องที่มาร่วมอย่างน้อย 1 ครั้งมีบางขุนเทียน <span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="active" data-where="region=บางขุนเทียน">—</span> จาก <span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="members" data-where="region=บางขุนเทียน">—</span> คน (<span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="active_rate" data-where="region=บางขุนเทียน" data-fmt="pct">—</span>) และบางบอน <span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="active" data-where="region=บางบอน">—</span> จาก <span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="members" data-where="region=บางบอน">—</span> คน (<span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="active_rate" data-where="region=บางบอน" data-fmt="pct">—</span>) น้องที่ยังไม่เคยมาคือกลุ่มที่ควรตามชวนก่อน</p>
+  </header>
+
+  <div class="mr-grid" id="mr-kpis">
+    <div class="mr-card mr-total">
+      <h3>รวมภาค 11</h3>
+      <div class="mr-kpis">
+        <div class="mr-kpi"><div class="lbl">รายชื่อรวม</div><div class="val mr-v dash-skeleton" data-source="mr_kpi" data-field="members" data-where="region=รวมภาค 11">—</div><div class="sub">มาแล้ว <span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="active" data-where="region=รวมภาค 11">—</span> คน (<span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="active_rate" data-where="region=รวมภาค 11" data-fmt="pct">—</span>)</div></div>
+        <div class="mr-kpi"><div class="lbl">ยอดเข้าร่วมสะสม</div><div class="val mr-v dash-skeleton" data-source="mr_kpi" data-field="attendance" data-where="region=รวมภาค 11">—</div><div class="sub">คน-ครั้ง</div></div>
+        <div class="mr-kpi"><div class="lbl">เฉลี่ยต่อเดือน</div><div class="val mr-v dash-skeleton" data-source="mr_kpi" data-field="avg" data-where="region=รวมภาค 11" data-fmt="1f">—</div><div class="sub">จาก <span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="meetings" data-where="region=รวมภาค 11">—</span> เดือนที่มีประชุม</div></div>
+      </div>
+    </div>
+    <div class="mr-card">
+      <h3>ภาคบางขุนเทียน</h3>
+      <div class="mr-kpis">
+        <div class="mr-kpi"><div class="lbl">รายชื่อในระบบ</div><div class="val mr-v dash-skeleton" data-source="mr_kpi" data-field="members" data-where="region=บางขุนเทียน">—</div><div class="sub">มาแล้ว <span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="active" data-where="region=บางขุนเทียน">—</span> คน</div></div>
+        <div class="mr-kpi"><div class="lbl">ยอดเข้าร่วมสะสม</div><div class="val mr-v dash-skeleton" data-source="mr_kpi" data-field="attendance" data-where="region=บางขุนเทียน">—</div><div class="sub">คน-ครั้ง</div></div>
+        <div class="mr-kpi"><div class="lbl">เฉลี่ยต่อครั้ง</div><div class="val mr-v dash-skeleton" data-source="mr_kpi" data-field="avg" data-where="region=บางขุนเทียน" data-fmt="1f">—</div><div class="sub">จัด <span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="meetings" data-where="region=บางขุนเทียน">—</span> ครั้ง</div></div>
+      </div>
+    </div>
+    <div class="mr-card">
+      <h3>ภาคบางบอน</h3>
+      <div class="mr-kpis">
+        <div class="mr-kpi"><div class="lbl">รายชื่อในทะเบียน</div><div class="val mr-v dash-skeleton" data-source="mr_kpi" data-field="members" data-where="region=บางบอน">—</div><div class="sub">มาแล้ว <span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="active" data-where="region=บางบอน">—</span> คน</div></div>
+        <div class="mr-kpi"><div class="lbl">ยอดเข้าร่วมสะสม</div><div class="val mr-v dash-skeleton" data-source="mr_kpi" data-field="attendance" data-where="region=บางบอน">—</div><div class="sub">คน-ครั้ง</div></div>
+        <div class="mr-kpi"><div class="lbl">เฉลี่ยต่อครั้ง</div><div class="val mr-v dash-skeleton" data-source="mr_kpi" data-field="avg" data-where="region=บางบอน" data-fmt="1f">—</div><div class="sub">จัด <span class="mr-v dash-skeleton" data-source="mr_kpi" data-field="meetings" data-where="region=บางบอน">—</span> ครั้ง</div></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="mr-sec" id="compare-sec">
+    <h2>รวมภาค 11</h2>
+    <div class="mr-card" data-source="compare">
+      <h3 id="compare-title">ยอดเข้าร่วมรายเดือน รวมภาค 11</h3>
+      <p class="mr-note">ตัวเลขบนแท่ง = ยอดรวมสองภาค · ม.ค.–ต.ค. 2026</p>
+      <div class="mr-legend"><span><i class="mr-sw" id="lg-c1"></i>ภาคบางขุนเทียน</span><span><i class="mr-sw" id="lg-c2"></i>ภาคบางบอน</span></div>
+      <div class="mr-chart" id="ch-compare"></div>
+    </div>
+  </section>
+
+  <section class="mr-sec" id="bkt-sec">
+    <h2>ภาคบางขุนเทียน</h2>
+    <div class="mr-grid">
+      <div class="mr-card" data-source="bkt_monthly">
+        <h3 id="bkt-monthly-title">ยอดเข้าร่วมรายเดือน</h3>
+        <p class="mr-note">ม.ค.–ต.ค. 2026 · แยกชาย-หญิง</p>
+        <div class="mr-legend"><span><i class="mr-sw" id="lg-m"></i>มิไรบุชาย</span><span><i class="mr-sw" id="lg-f"></i>มิไรบุหญิง</span></div>
+        <div class="mr-chart" id="ch-bkt-monthly"></div>
+      </div>
+      <div class="mr-card" data-source="bkt_zones">
+        <h3 id="bkt-active-title">รายชื่อเทียบกับคนที่มาร่วมแล้ว รายเขต</h3>
+        <p class="mr-note">“มาร่วมแล้ว” = มาอย่างน้อย 1 ครั้งในปีนี้</p>
+        <div class="mr-legend"><span><i class="mr-sw" id="lg-br"></i>รายชื่อทั้งหมด</span><span><i class="mr-sw" id="lg-ba"></i>มาร่วมแล้ว</span></div>
+        <div class="mr-chart" id="ch-bkt-active"></div>
+      </div>
+      <div class="mr-card" data-source="bkt_dist">
+        <h3 id="bkt-dist-title">มาร่วมกี่ครั้ง</h3>
+        <p class="mr-note">จำนวนคนตามจำนวนครั้งที่มาร่วม (จากที่จัด 8 ครั้ง)</p>
+        <div class="mr-legend"><span><i class="mr-sw" style="background: var(--mr-c1)"></i>จำนวนคน</span></div>
+        <div class="mr-chart" id="ch-bkt-dist"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mr-sec" id="bkt-members-sec">
+    <div class="mr-card">
+      <h3 id="bkt-members-title">รายชื่อน้อง · ภาคบางขุนเทียน</h3>
+      <p class="mr-note">เรียงจากมาร่วมมากไปน้อย · กดหัวคอลัมน์เพื่อเรียงแบบอื่น · ✓ = มาร่วมเดือนนั้น</p>
+      <input class="mr-search" id="bkt-search" type="search" placeholder="ค้นหาชื่อเล่นหรือเขต…">
+      <div class="mr-tbox">
+        <table class="mr-table mr-grid-t" id="bkt-table" data-source="bkt_grid" data-row-key="id">
+          <thead><tr>
+            <th data-field="id"><button type="button" data-k="id">รหัส</button></th>
+            <th data-field="nickname"><button type="button" data-k="nickname">ชื่อเล่น</button></th>
+            <th data-field="sex" class="mr-hide-sm"><button type="button" data-k="sex">เพศ</button></th>
+            <th data-field="zone"><button type="button" data-k="zone">เขต</button></th>
+            <th data-field="attended"><button type="button" data-k="attended">รวม</button></th>
+            <th data-field="m01" class="mr-m"><button type="button" data-k="m01">ม.ค.</button></th>
+            <th data-field="m02" class="mr-m"><button type="button" data-k="m02">ก.พ.</button></th>
+            <th data-field="m03" class="mr-m"><button type="button" data-k="m03">มี.ค.</button></th>
+            <th data-field="m05" class="mr-m"><button type="button" data-k="m05">พ.ค.</button></th>
+            <th data-field="m07" class="mr-m"><button type="button" data-k="m07">ก.ค.</button></th>
+            <th data-field="m08" class="mr-m"><button type="button" data-k="m08">ส.ค.</button></th>
+            <th data-field="m09" class="mr-m"><button type="button" data-k="m09">ก.ย.</button></th>
+            <th data-field="m10" class="mr-m"><button type="button" data-k="m10">ต.ค.</button></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="mr-sec" id="bb-sec">
+    <h2>ภาคบางบอน</h2>
+    <div class="mr-grid">
+      <div class="mr-card" data-source="bb_monthly">
+        <h3 id="bb-monthly-title">ยอดเข้าร่วมรายเดือน</h3>
+        <p class="mr-note">ม.ค.–ต.ค. 2026 · ทะเบียนไม่ได้แยกชาย-หญิง</p>
+        <div class="mr-legend"><span><i class="mr-sw" id="lg-bbm"></i>มาร่วม</span></div>
+        <div class="mr-chart" id="ch-bb-monthly"></div>
+      </div>
+      <div class="mr-card" data-source="bb_zones">
+        <h3 id="bb-zones-title">รายชื่อเทียบกับคนที่มาร่วมแล้ว รายเขต</h3>
+        <p class="mr-note">“มาร่วมแล้ว” = มาอย่างน้อย 1 ครั้งในปีนี้</p>
+        <div class="mr-legend"><span><i class="mr-sw" id="lg-zr"></i>รายชื่อทั้งหมด</span><span><i class="mr-sw" id="lg-za"></i>มาร่วมแล้ว</span></div>
+        <div class="mr-chart" id="ch-bb-zones"></div>
+      </div>
+      <div class="mr-card" data-source="bb_dist">
+        <h3 id="bb-dist-title">มาร่วมกี่ครั้ง</h3>
+        <p class="mr-note">จำนวนคนตามจำนวนครั้งที่มาร่วม (จากที่จัด 6 ครั้ง)</p>
+        <div class="mr-legend"><span><i class="mr-sw" style="background: var(--mr-c1)"></i>จำนวนคน</span></div>
+        <div class="mr-chart" id="ch-bb-dist"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mr-sec" id="bb-members-sec">
+    <div class="mr-card">
+      <h3 id="bb-members-title">รายชื่อน้อง · ภาคบางบอน</h3>
+      <p class="mr-note">เรียงจากมาร่วมมากไปน้อย · กดหัวคอลัมน์เพื่อเรียงแบบอื่น · ✓ = มาร่วมเดือนนั้น</p>
+      <input class="mr-search" id="bb-search" type="search" placeholder="ค้นหาชื่อเล่นหรือเขต…">
+      <div class="mr-tbox">
+        <table class="mr-table mr-grid-t" id="bb-table" data-source="bb_grid" data-row-key="no">
+          <thead><tr>
+            <th data-field="no"><button type="button" data-k="no">ลำดับ</button></th>
+            <th data-field="nickname"><button type="button" data-k="nickname">ชื่อเล่น</button></th>
+            <th data-field="zone"><button type="button" data-k="zone">เขต</button></th>
+            <th data-field="attended"><button type="button" data-k="attended">รวม</button></th>
+            <th data-field="m01" class="mr-m"><button type="button" data-k="m01">ม.ค.</button></th>
+            <th data-field="m02" class="mr-m"><button type="button" data-k="m02">ก.พ.</button></th>
+            <th data-field="m05" class="mr-m"><button type="button" data-k="m05">พ.ค.</button></th>
+            <th data-field="m07" class="mr-m"><button type="button" data-k="m07">ก.ค.</button></th>
+            <th data-field="m08" class="mr-m"><button type="button" data-k="m08">ส.ค.</button></th>
+            <th data-field="m10" class="mr-m"><button type="button" data-k="m10">ต.ค.</button></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <p class="mr-note" id="caveats">หมายเหตุข้อมูล: ภาคบางขุนเทียนดึงจากระบบทะเบียนมิไรบุ BKK11 (รายชื่อและการลงทะเบียนแต่ละเดือน) ณ 22 ต.ค. 2026 ·ทะเบียนภาคบางบอนไม่มีข้อมูลเพศ จึงไม่ได้แยกชาย-หญิง</p>
+</div>
+</div>
+</div>
+
+<script>
+(function () {
+  const btns = [...document.querySelectorAll('.tabs-top button')];
+  const panes = [...document.querySelectorAll('.tabpane')];
+  const show = () => {
+    const t = dash.params().tab || 'dialog';
+    btns.forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+    panes.forEach(p => { p.hidden = p.dataset.tab !== t; });
+  };
+  btns.forEach(b => b.addEventListener('click', () => { dash.setParams({tab: b.dataset.tab}); dash.setLink('tab-' + b.dataset.tab); }));
+  const named = location.hash.slice(1);
+  if (named === 'tab-mirai' || named === 'tab-dialog') dash.setParams({tab: named.slice(4)});
+  show();
+  dash.onData(show);
+})();
+</script>
+<script>
+const F = [['md','ผช'],['wd','ผญ'],['ymd','ยช'],['ywd','ยญ'],['mb','มช'],['mg','มญ'],['new','เพื่อนสมาชิกใหม่']];
+window.SD_F = F;
+const COL = {md:'#2563C9', ymd:'#5B9BEA', mb:'#A8CDF6', wd:'#C2185B', ywd:'#E8709A', mg:'#F6B3CB', new:'#D9A23A'};
+const GORDER = ['md','ymd','mb','wd','ywd','mg','new'];
+const FN = Object.fromEntries(F);
+
+dash.calc('monthly', {
+  title: 'ยอดรายเดือนแยกฝ่าย',
+  description: 'รวมตำบลเป็นยอดรายเดือนของรวมภาค แต่ละภาค และแต่ละเขต เทียบกับเดือนเดียวกันของปี 2568 พร้อมแถวรวม เฉลี่ย และ % เปลี่ยนแปลง',
+  inputs: ['attendance', 'attendance68'],
+  fn: (attendance, attendance68) => {
+    const k = ['md','wd','ymd','ywd','mb','mg','new','total'];
+    const MN = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    const pct = (a, b) => b ? Math.round((a / b - 1) * 1000) / 10 : null;
+    const out = [];
+    const khets = [...new Set(attendance.map(r => r.phak + '/' + r.khet))];
+    const scopes = [['รวมภาค', () => true], ['บางขุนเทียน', r => r.phak === 'บางขุนเทียน'], ['บางบอน', r => r.phak === 'บางบอน'],
+      ...khets.map(pk => ['เขต:' + pk, r => r.phak + '/' + r.khet === pk])];
+    for (const [scope, keep] of scopes) {
+      const rs = attendance.filter(keep), ps = attendance68.filter(keep);
+      const months = [...new Set(rs.map(r => Number(r.month)))].sort((a,b) => a-b);
+      const sumOf = (arr, m) => { const o = {}; for (const c of k) o[c] = arr.filter(r => Number(r.month) === m).reduce((s,r) => s + Number(r[c]), 0); return o; };
+      const sum = {}, psum = {}, ysum = {};
+      for (let m = 1; m <= 12; m++) {
+        const p = sumOf(ps, m);
+        out.push({key: scope + '|68|' + MN[m-1], scope, month: m, ym: m, month_name: MN[m-1] + ' 68', label: MN[m-1] + ' 68', kind: 'y68', ...p});
+        for (const x of k) ysum[x] = (ysum[x]||0) + p[x];
+        if (months.includes(m)) {
+          const c = sumOf(rs, m);
+          for (const x of k) { sum[x] = (sum[x]||0) + c[x]; psum[x] = (psum[x]||0) + p[x]; }
+          out.push({key: scope + '|' + MN[m-1], scope, month: m, ym: 12 + m, month_name: MN[m-1], label: MN[m-1] + ' 69', kind: 'month', ...c, p_total: p.total, chg_total: pct(c.total, p.total), p_new: p.new, chg_new: pct(c.new, p.new)});
+        } else {
+          out.push({key: scope + '|' + MN[m-1], scope, month: m, ym: 12 + m, month_name: MN[m-1], kind: 'pmonth', p_total: p.total, p_new: p.new});
+        }
+      }
+      const n = months.length;
+      out.push({key: scope + '|รวมทั้งปี2568', scope, month: 97, month_name: 'รวมทั้งปี 2568', kind: 'y68sum', ...ysum});
+      out.push({key: scope + '|รวม', scope, month: 98, month_name: 'รวม', kind: 'sum', ...sum, p_total: psum.total, chg_total: pct(sum.total, psum.total), p_new: psum.new, chg_new: pct(sum.new, psum.new)});
+      const avg = {}; for (const c of k) avg[c] = Math.round(sum[c] / n * 10) / 10;
+      const pavg = Math.round(psum.total / n * 10) / 10;
+      out.push({key: scope + '|เฉลี่ย', scope, month: 99, month_name: 'เฉลี่ย', kind: 'avg', ...avg, p_total: pavg, chg_total: pct(sum.total, psum.total), p_new: Math.round(psum.new / n * 10) / 10, chg_new: pct(sum.new, psum.new)});
+      out.push({key: scope + '|รวม2568', scope, month: 100, month_name: 'รวม ปี 2568 (' + MN[months[0]-1] + '–' + MN[months[n-1]-1] + ')', kind: 'psum', ...psum, p_total: null, chg_total: null});
+      const chg = {}; for (const c of k) chg[c] = pct(sum[c], psum[c]);
+      out.push({key: scope + '|เทียบ2568', scope, month: 101, month_name: 'เทียบปีที่แล้ว (%)', kind: 'chg', ...chg, p_total: null, chg_total: null});
+    }
+    return out;
+  }
+});
+
+dash.calc('kpi', {
+  title: 'ตัวเลขหลัก',
+  description: 'ยอดรวม เฉลี่ย เดือนสูงสุด และเดือนล่าสุดของรวมภาค เทียบกับช่วงเดียวกันของปี 2568',
+  inputs: ['monthly'],
+  fn: (monthly) => {
+    const ms = monthly.filter(r => r.scope === 'รวมภาค' && r.kind === 'month');
+    const sum = monthly.find(r => r.key === 'รวมภาค|รวม');
+    const peak = ms.reduce((a,b) => b.total > a.total ? b : a);
+    const ppeak = ms.reduce((a,b) => b.p_total > a.p_total ? b : a);
+    const last = ms[ms.length-1], prev = ms[ms.length-2];
+    const d = last.total - prev.total;
+    const f = (v) => v.toLocaleString('en');
+    const pc = (a, b) => { const v = (a / b - 1) * 100; return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; };
+    const span = ms[0].month_name + '–' + last.month_name;
+    return [{
+      total: f(sum.total),
+      total_yoy: 'ปี 2568 ช่วงเดียวกัน ' + f(sum.p_total) + ' (' + pc(sum.total, sum.p_total) + ')',
+      avg: f(Math.round(sum.total / ms.length)),
+      avg_yoy: 'ปี 2568 เฉลี่ย ' + f(Math.round(sum.p_total / ms.length)) + ' (' + pc(sum.total, sum.p_total) + ')',
+      peak_total: f(peak.total),
+      peak_month: peak.month_name + ' · เพื่อนสมาชิกใหม่ ' + peak.new + ' คน',
+      peak_yoy: 'ปี 2568 สูงสุด (' + span + ') ' + ppeak.month_name + ' ' + f(ppeak.p_total),
+      last_total: f(last.total),
+      last_delta_text: (d >= 0 ? '+' : '') + d + ' จาก ' + prev.month_name,
+      last_yoy: last.month_name + ' 2568: ' + f(last.p_total) + ' (' + pc(last.total, last.p_total) + ')',
+      up_total: sum.total >= sum.p_total, up_avg: sum.total >= sum.p_total, up_peak: peak.total >= ppeak.p_total, up_last: last.total >= last.p_total
+    }];
+  }
+});
+
+dash.calc('tambon', {
+  title: 'สรุปรายตำบล',
+  description: 'ยอดเฉลี่ยต่อเดือนแต่ละตำบล เทียบช่วงเดียวกันของปี 2568 โทกังจากฐานข้อมูล BKK11-tokan % มาร่วมเทียบโทกัง และแนวโน้มเทียบปีที่แล้ว (ยอดเฉลี่ยต่อเดือนปีนี้ ลบ ปี 2568 ช่วงเดือนเดียวกัน)',
+  inputs: ['attendance', 'tokan', 'attendance68'],
+  fn: (attendance, tokan, attendance68) => {
+    const k = ['md','wd','ymd','ywd','mb','mg','new','total'];
+    const key = (x) => x.replace(/\s/g, '');
+    const summarize = (rs, tambons) => {
+      const months = [...new Set(rs.map(r => Number(r.month)))];
+      const o = {};
+      const ps = attendance68.filter(r => tambons.includes(r.tambon) && months.includes(Number(r.month)));
+      o.p_total = Math.round(ps.reduce((s,r) => s + Number(r.total), 0) / months.length * 10) / 10;
+      for (const c of k) o[c] = Math.round(rs.reduce((s,r) => s + Number(r[c]), 0) / months.length * 10) / 10;
+      const tks = tambons.map(t => tokan.find(r => r.tambon_key === key(t))).filter(Boolean);
+      o.tokan = tks.length === tambons.length ? tks.reduce((s,r) => s + Number(r.total), 0) : null;
+      o.rate = o.tokan ? Math.round((o.total - o.new) / o.tokan * 1000) / 10 : null;
+      o.p_new = Math.round(ps.reduce((s,r) => s + Number(r.new), 0) / months.length * 10) / 10;
+      o.trend = Math.round((o.total - o.p_total) * 10) / 10;
+      o.trend_new = Math.round((o.new - o.p_new) * 10) / 10;
+      o.yoy = o.p_total ? Math.round((o.total / o.p_total - 1) * 1000) / 10 : null;
+      return o;
+    };
+    const out = [];
+    for (const t of [...new Set(attendance.map(r => r.tambon))]) {
+      const rs = attendance.filter(r => r.tambon === t);
+      out.push({key: t, level: 'tambon', name: t, tambon: t, phak: rs[0].phak, khet: rs[0].khet, ...summarize(rs, [t])});
+    }
+    for (const pk of [...new Set(attendance.map(r => r.phak + '/' + r.khet))]) {
+      const [ph, kh] = pk.split('/'); const rs = attendance.filter(r => r.phak === ph && r.khet === kh);
+      out.push({key: 'เขต:' + pk, level: 'khet', name: 'เขต' + kh, phak: ph, khet: kh, ...summarize(rs, [...new Set(rs.map(r => r.tambon))])});
+    }
+    for (const ph of [...new Set(attendance.map(r => r.phak))]) {
+      const rs = attendance.filter(r => r.phak === ph);
+      out.push({key: 'ภาค:' + ph, level: 'phak', name: 'ภาค' + ph, phak: ph, ...summarize(rs, [...new Set(rs.map(r => r.tambon))])});
+    }
+    out.push({key: 'รวม', level: 'all', name: 'รวมทั้งหมด', ...summarize(attendance, [...new Set(attendance.map(r => r.tambon))])});
+    return out;
+  }
+});
+
+dash.calc('highlights', {
+  title: 'จุดที่น่าสนใจ',
+  description: 'ข้อสังเกตที่คำนวณจากยอดรายเดือน รายตำบล และโทกังจากฐานข้อมูล BKK11-tokan',
+  inputs: ['monthly', 'tambon', 'tokan', 'attendance'],
+  fn: (monthly, tambon, tokan, attendance) => {
+    const pc = (v) => (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+    const M = (s) => monthly.filter(r => r.scope === s && r.kind === 'month');
+    const R = M('รวมภาค'), B = M('บางขุนเทียน'), N = M('บางบอน');
+    const S = (s) => monthly.find(r => r.key === s + '|รวม');
+    const peak = R.reduce((a,b) => b.total > a.total ? b : a);
+    const pb = B.find(r => r.month === peak.month);
+    const pt = attendance.filter(r => Number(r.month) === peak.month).reduce((a,b) => Number(b.total) > Number(a.total) ? b : a);
+    const tok = (c, ph) => tokan.filter(r => r.phak === ph).reduce((s,r) => s + Number(r[c]), 0);
+    const rate = (c, ph) => (S(ph)[c] / M(ph).length / tok(c, ph) * 100).toFixed(1);
+                    const TB = tambon.filter(t => t.level === 'tambon');
+    const down = [...TB].sort((a,b) => a.trend - b.trend).slice(0,2);
+    const up = [...TB].sort((a,b) => b.trend - a.trend).slice(0,3);
+    const SR = S('รวมภาค'), CH = monthly.find(r => r.key === 'รวมภาค|เทียบ2568');
+    const fxs = [['md','ผช'],['wd','ผญ'],['ymd','ยช'],['ywd','ยญ'],['mb','มช'],['mg','มญ']].map(([c, n]) => ({n, v: CH[c]})).sort((a,b) => b.v - a.v);
+    const TY = tambon.filter(t => t.level === 'tambon' && t.yoy != null);
+    const yUp = [...TY].sort((a,b) => b.yoy - a.yoy).slice(0,3), yDn = [...TY].sort((a,b) => a.yoy - b.yoy).slice(0,3);
+    const PH = (ph) => S(ph);
+    return [
+      {id:'yoy', tone: SR.total >= SR.p_total ? 'good' : 'warn', title:'เทียบปีที่แล้ว ' + pc(SR.chg_total), text: R[0].month_name + '–' + R[R.length-1].month_name + ' ปีนี้ ' + SR.total.toLocaleString('en') + ' คน · ปี 2568 ' + SR.p_total.toLocaleString('en') + ' คน · บางบอน ' + pc(PH('บางบอน').chg_total) + ' · บางขุนเทียน ' + pc(PH('บางขุนเทียน').chg_total)},
+      {id:'fxyoy', tone:'', title:'ฝ่ายไหนโตจากปีที่แล้ว', text: 'โตมากสุด: ' + fxs.slice(0,2).map(x => x.n + ' ' + pc(x.v)).join(', ') + ' · ' + (fxs[fxs.length-1].v < 0 ? 'ลดลง: ' : 'โตน้อยสุด: ') + fxs.filter((x, i) => x.v < 0 || i === fxs.length-1).map(x => x.n + ' ' + pc(x.v)).join(', ') + ' · เพื่อนสมาชิกใหม่ ' + pc(CH.new)},
+      {id:'tbyoy', tone:'warn', title:'ตำบลเทียบปีที่แล้ว', text: 'โตมากสุด: ' + yUp.map(t => t.tambon + ' ' + pc(t.yoy)).join(', ') + ' · ลดลงมากสุด: ' + yDn.map(t => t.tambon + ' ' + pc(t.yoy)).join(', ')},
+      {id:'growth', tone:'good', title:'ผู้มาร่วมเพิ่มขึ้นเล็กน้อย', text: (() => { const mem = (r) => r.total - r.new; const av = (ms) => Math.round(R.filter(r => ms.includes(r.month)).reduce((s,r) => s + mem(r), 0) / ms.length); const q1 = av([1,2,3]), end = av([8,9]); return 'เฉลี่ย ' + q1 + ' → ' + av([4,6]) + ' → ' + end + ' คน/เดือน (+' + Math.round((end / q1 - 1) * 100) + '%) ทั้งสองภาค · ไม่นับ พ.ค./ก.ค. ที่มีงานพิเศษ · ยังแกว่ง ควรรอดู ต.ค.–ธ.ค.'; })()},
+      {id:'peak', tone:'good', title: peak.month_name + ' คือจุดพีคของปี', text: 'ยอดรวม ' + peak.total + ' คน · เพื่อนสมาชิกใหม่ ' + peak.new + ' คน · ตำบล' + pt.tambon + ' ' + pt.total + ' คน'},
+    ];
+  }
+});
+
+const scopes = ['รวมภาค','บางขุนเทียน','บางบอน'];
+const btnBox = document.getElementById('scope-btns');
+const khetSel = document.getElementById('khet-sel');
+const LEVELS = [['tambon','ตำบล'],['khet','เขต'],['phak','ภาค']];
+const lvBox = document.getElementById('level-btns');
+const colList = document.getElementById('colmgr-list'), colStyle = document.getElementById('colhide');
+const tbHeads = [...document.querySelectorAll('#tambon-table thead th')].slice(1).map((th, i) => ({idx: i + 2, field: th.dataset.field, label: ''}));
+const thAll = [...document.querySelectorAll('#tambon-table thead th')];
+tbHeads.forEach(h => { const th = thAll[h.idx - 1]; const clone = th.cloneNode(true); clone.querySelectorAll('.u').forEach(u => u.remove()); h.label = clone.textContent.replace(/\s+/g, ' ').trim(); });
+tbHeads.forEach(h => {
+  const lab = document.createElement('label'); const cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = h.field;
+  cb.addEventListener('change', () => { const hide = new Set(dash.params().hide || []); cb.checked ? hide.delete(h.field) : hide.add(h.field); dash.setParams({hide: [...hide]}); });
+  lab.append(cb); if (COL[h.field]) { const w = document.createElement('i'); w.className = 'sw'; w.style.background = COL[h.field]; lab.append(w); } lab.append(h.label); colList.appendChild(lab);
+});
+document.getElementById('col-all').addEventListener('click', () => dash.setParams({hide: []}));
+document.getElementById('col-none').addEventListener('click', () => dash.setParams({hide: tbHeads.map(h => h.field)}));
+const applyCols = () => {
+  const hide = new Set(dash.params().hide || []);
+  colList.querySelectorAll('input').forEach(cb => { cb.checked = !hide.has(cb.value); });
+  colStyle.textContent = tbHeads.filter(h => hide.has(h.field)).map(h => `#tambon-table tr > :nth-child(${h.idx}):not([colspan]){display:none}`).join('\n');
+};
+LEVELS.forEach(([v, n]) => { const b = document.createElement('button'); b.type = 'button'; b.dataset.v = v; b.textContent = 'รวมเป็น' + n; b.addEventListener('click', () => dash.setParams({level: v})); lvBox.appendChild(b); });
+const optTl = document.getElementById('opt-tl'), optNew = document.getElementById('opt-new');
+optTl.addEventListener('change', () => dash.setParams({tl: optTl.checked}));
+optNew.addEventListener('change', () => dash.setParams({newonly: optNew.checked}));
+khetSel.addEventListener('change', () => dash.setParams({scope: khetSel.value || 'รวมภาค'}));
+scopes.forEach(s => { const b = document.createElement('button'); b.type='button'; b.textContent = s; b.addEventListener('click', () => dash.setParams({scope: s})); btnBox.appendChild(b); });
+const fmt = (v) => v == null ? '–' : (Number.isInteger(v) ? d3.format(',')(v) : d3.format(',.1f')(v));
+const clearSk = (sel) => document.querySelectorAll(sel).forEach(e => e.classList.remove('dash-skeleton'));
+
+function colorCols(table) {
+  const ths = [...table.querySelectorAll('thead th')];
+  const cols = ths.map((th, i) => [i, COL[th.dataset.field]]).filter(([, c]) => c);
+  const n = ths.length;
+  table.querySelectorAll('tr').forEach(tr => {
+    if (tr.cells.length !== n) return;
+    for (const [i, col] of cols) {
+      const c = tr.cells[i];
+      if (c.tagName === 'TH') c.style.boxShadow = `inset 0 6px 0 ${col}, inset 0 -2px 0 var(--color-border-line)`;
+      else c.style.backgroundImage = `linear-gradient(color-mix(in srgb, ${col} 16%, transparent), color-mix(in srgb, ${col} 16%, transparent))`;
+    }
+  });
+}
+function failRow(tbody, n) { tbody.replaceChildren(); const tr = tbody.insertRow(); const td = tr.insertCell(); td.colSpan = n; td.innerHTML = ''; const d = document.createElement('div'); d.className='fail'; d.textContent='Failed to load'; td.appendChild(d); }
+
+let DL = null;
+try { window.claude && window.claude.use && window.claude.use('downloads').then(x => { DL = x; }).catch(() => {}); } catch (e) {}
+const stamp = () => { const d = new Date(); const p = (n) => String(n).padStart(2, '0'); return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()); };
+document.querySelectorAll('.exp-btn').forEach(btn => btn.addEventListener('click', async () => {
+  const sec = document.getElementById(btn.dataset.target), out = sec.querySelector('.exp-out');
+  const filename = 'สนทนาธรรม-' + btn.dataset.name + '-' + stamp() + '.png';
+  out.replaceChildren(); btn.disabled = true; const label = btn.textContent; btn.textContent = 'กำลังสร้างภาพ…';
+  try {
+    if (!window.htmlToImage) throw new Error('no-lib');
+    sec.classList.add('exporting');
+    const bg = getComputedStyle(sec).backgroundColor;
+    const blob = await window.htmlToImage.toBlob(sec, { pixelRatio: 2, backgroundColor: bg, filter: (n) => !(n.classList && n.classList.contains('no-export')) });
+    sec.classList.remove('exporting');
+    if (!blob) throw new Error('empty');
+    let saved = false;
+    if (DL) {
+      try { await DL.save({ filename, data: blob }); saved = true; }
+      catch (e) { if (e && e.code === 'declined') { btn.disabled = false; btn.textContent = label; return; } }
+    }
+    const url = URL.createObjectURL(blob);
+    if (!saved) { const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); }
+    const row = document.createElement('div'); row.className = 'row';
+    const msg = document.createElement('span'); msg.textContent = saved ? 'บันทึกภาพแล้ว' : 'ถ้าไฟล์ไม่ถูกดาวน์โหลดอัตโนมัติ: คลิกขวาที่ภาพ › บันทึกรูปภาพ (มือถือ: กดค้างที่ภาพ)';
+    const close = document.createElement('button'); close.type = 'button'; close.textContent = 'ปิด ✕'; close.style.cssText = 'background:none;border:none;cursor:pointer';
+    close.addEventListener('click', () => { out.replaceChildren(); URL.revokeObjectURL(url); });
+    row.append(msg, close); out.appendChild(row);
+    const img = document.createElement('img'); img.src = url; img.alt = filename; out.appendChild(img);
+  } catch (e) {
+    sec.classList.remove('exporting');
+    out.textContent = 'สร้างภาพไม่สำเร็จ ลองใหม่อีกครั้ง หรือใช้การแคปหน้าจอแทน';
+  }
+  btn.disabled = false; btn.textContent = label;
+}));
+
+dash.onData(() => {
+  const scope = dash.params().scope || 'รวมภาค';
+  btnBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.textContent === scope)));
+
+  // KPI
+  const k = dash.data('kpi');
+  document.querySelectorAll('[data-source="kpi"]').forEach(el => {
+    if (k.status === 'ok' && k.data[0]) { const K0 = k.data[0]; el.textContent = K0[el.dataset.field]; el.classList.remove('dash-skeleton'); if (el.classList.contains('yoy')) { const up = K0['up_' + el.dataset.field.replace('_yoy','')]; el.classList.toggle('up', up); el.classList.toggle('down', !up); } }
+    else if (k.status === 'error') { el.textContent = '—'; el.classList.remove('dash-skeleton'); }
+  });
+
+  // Monthly table + chart
+  const m = dash.data('monthly');
+  const tb = document.querySelector('#monthly-table tbody');
+  const chart = document.getElementById('chart');
+  const tip = chart.querySelector('.tip');
+  const TL = !!dash.params().tl, NW = !!dash.params().newonly;
+  optTl.checked = TL; optNew.checked = NW;
+  chart.querySelectorAll('svg,.fail').forEach(e => e.remove());
+  // header
+  const head = document.getElementById('mt-head'); head.replaceChildren();
+  const hcols = NW ? [['month_name','เดือน',''],['new','เพื่อนสมาชิกใหม่','คน'],['p_new','ปี 2568','คน'],['chg_new','เทียบปีที่แล้ว','%']]
+    : [['month_name','เดือน',''], ...F.map(([c, n]) => [c, n, 'คน']), ['total','รวม','คน'], ['p_total','ปี 2568','คน'], ['chg_total','เทียบปีที่แล้ว','%']];
+  for (const [f, n, u] of hcols) { const th = document.createElement('th'); th.dataset.field = f; th.append(n); if (u) { const sp = document.createElement('span'); sp.className = 'u'; sp.textContent = '(' + u + ')'; th.append(sp); } head.appendChild(th); }
+  if (m.status === 'ok') {
+    const ks = [...new Set(m.data.map(r => r.scope).filter(x => x.startsWith('เขต:')))];
+    if (khetSel.options.length !== ks.length + 1) {
+      khetSel.replaceChildren(new Option('ทุกเขต', ''));
+      for (const ph of ['บางขุนเทียน','บางบอน']) {
+        const g = document.createElement('optgroup'); g.label = 'ภาค' + ph;
+        ks.filter(x => x.startsWith('เขต:' + ph + '/')).forEach(x => g.appendChild(new Option(x.split('/')[1], x)));
+        khetSel.appendChild(g);
+      }
+    }
+    khetSel.value = scope.startsWith('เขต:') ? scope : '';
+    const all = m.data.filter(r => r.scope === scope);
+    const val = (r) => NW ? r.new : r.total;
+    const pval = (r) => NW ? r.p_new : r.p_total;
+    const cur = all.filter(r => r.kind === 'month').sort((a,b) => a.month - b.month);
+    const y68 = all.filter(r => r.kind === 'y68').sort((a,b) => a.month - b.month);
+    const bars = TL ? [...y68, ...cur] : cur;
+    const series = TL ? bars : all.filter(r => r.kind === 'month' || r.kind === 'pmonth').sort((a,b) => a.month - b.month);
+    const lab = (r) => TL ? r.label : r.month_name;
+    const avgV = d3.mean(bars, val);
+    const isTop = (r) => val(r) > avgV;
+    const pc = (v) => v == null ? '–' : (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+    const updn = (td, v) => { if (v != null) td.classList.add(v >= 0 ? 'up' : 'down'); };
+    // table rows
+    const vfields = hcols.slice(1).map(h => h[0]);
+    const dataFields = NW ? ['new'] : [...F.map(f => f[0]), 'total'];
+    const ext = {}; for (const c of dataFields) ext[c] = [d3.max(bars, r => r[c]), d3.min(bars, r => r[c])];
+    tb.replaceChildren();
+    const yr = (text) => { const tr = tb.insertRow(); tr.className = 'yr'; const c = tr.insertCell(); c.colSpan = hcols.length; c.textContent = text; };
+    const addRow = (r) => {
+      const tr = tb.insertRow(); tr.dataset.key = r.key;
+      if (r.kind === 'psum' || r.kind === 'chg') tr.className = r.kind; else if (r.kind === 'month' || r.kind === 'y68') { if (isTop(r)) tr.className = 'top'; } else tr.className = 'sum';
+      const c0 = tr.insertCell(); c0.textContent = r.month_name;
+      if ((r.kind === 'month' || r.kind === 'y68') && isTop(r)) { const bd = document.createElement('span'); bd.className = 'badge'; bd.textContent = 'สูงกว่าเฉลี่ย'; c0.appendChild(bd); }
+      for (const f of vfields) {
+        const td = tr.insertCell(); const v = r[f];
+        if (f.startsWith('chg_') || r.kind === 'chg') { td.textContent = v == null ? '' : pc(v); updn(td, v); }
+        else td.textContent = v == null ? '' : fmt(v);
+        if ((r.kind === 'month' || r.kind === 'y68') && ext[f] && ext[f][0] !== ext[f][1]) { if (v === ext[f][0]) td.classList.add('hot'); else if (v === ext[f][1]) td.classList.add('cold'); }
+      }
+    };
+    if (TL) { yr('ปี 2568'); y68.forEach(addRow); all.filter(r => r.kind === 'y68sum').forEach(addRow); yr('ปี 2569'); }
+    cur.forEach(addRow);
+    all.filter(r => ['sum','avg','psum','chg'].includes(r.kind)).sort((a,b) => a.month - b.month).forEach(addRow);
+    // legend
+    const keys = NW ? ['new'] : GORDER;
+    const leg = document.getElementById('legend'); leg.replaceChildren();
+    keys.map(c => [c, FN[c]]).forEach(([c, n]) => { const s = document.createElement('span'); const w = document.createElement('i'); w.className='sw'; w.style.background = COL[c]; s.append(w, n); leg.appendChild(s); });
+    if (!TL) { const s = document.createElement('span'); const w = document.createElement('i'); w.className='sw'; w.style.background = 'transparent'; w.style.borderTop = '3px dashed var(--color-fg)'; w.style.height = '0'; w.style.verticalAlign = 'middle'; w.style.width = '22px'; s.append(w, (NW ? 'เพื่อนสมาชิกใหม่' : 'ยอดรวม') + 'ปี 2568'); leg.appendChild(s); }
+    // chart
+    const W = chart.clientWidth, H = 520, mg = {t: 40, r: 8, b: TL ? 84 : 48, l: 8};
+    const svg = d3.select(chart).insert('svg', '.tip').attr('width','100%').attr('viewBox', `0 0 ${W} ${H}`);
+    const stack = d3.stack().keys(keys)(bars);
+    const ymax = Math.max(d3.max(bars, val), TL ? 0 : d3.max(series, pval));
+    const y = d3.scaleLinear([0, ymax * 1.1], [H - mg.b, mg.t]).nice();
+    const yAxis = svg.append('g').call(d3.axisLeft(y).ticks(5).tickSize(0)).attr('font-size', null).attr('font-family', null);
+    yAxis.select('.domain').remove();
+    let lw = 0; yAxis.selectAll('text').attr('fill','var(--color-fg-muted)').style('font-size','var(--sd-fs)').each(function(){ lw = Math.max(lw, this.getComputedTextLength()); });
+    mg.l = lw + 10; yAxis.attr('transform', `translate(${mg.l - 4},0)`);
+    svg.append('text').attr('x', 2).attr('y', 28).attr('fill','var(--color-fg-muted)').style('font-size','var(--sd-fs)').text('(คน)');
+    const avgLab = svg.append('text').attr('fill','var(--color-fg-muted)').style('font-size','var(--sd-fs)').attr('dominant-baseline','middle').text('เฉลี่ย ' + d3.format(',.0f')(avgV));
+    mg.r = avgLab.node().getComputedTextLength() + 14;
+    const x = d3.scaleBand(series.map(lab), [mg.l, W - mg.r]).padding(TL ? 0.18 : 0.28);
+    svg.insert('g', ':first-child').selectAll('line').data(y.ticks(5)).join('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', d => y(d)).attr('y2', d => y(d)).attr('stroke','var(--cds-chart-grid)');
+    const xa = svg.append('g').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(x).tickSize(0).tickFormat(t => TL ? t.split(' ')[0] : t)).attr('font-size', null).attr('font-family', null);
+    xa.select('.domain').attr('stroke','var(--cds-chart-axis)');
+    xa.selectAll('text').attr('fill','var(--color-fg-muted)').attr('dy','1.1em').style('font-size','var(--sd-fs)');
+    let maxTick = 0; xa.selectAll('text').each(function(){ maxTick = Math.max(maxTick, this.getComputedTextLength()); });
+    if (maxTick > x.step() - 4) xa.selectAll('.tick').each(function(d, i){ if (i % 2) d3.select(this).select('text').remove(); });
+    if (TL) {
+      const yrs = [['ปี 2568', y68], ['ปี 2569', cur]];
+      for (const [t, arr] of yrs) {
+        if (!arr.length) continue;
+        const x0 = x(lab(arr[0])), x1 = x(lab(arr[arr.length-1])) + x.bandwidth();
+        svg.append('line').attr('x1', x0).attr('x2', x1).attr('y1', H - mg.b + 46).attr('y2', H - mg.b + 46).attr('stroke','var(--cds-chart-axis)');
+        svg.append('text').attr('x', (x0 + x1) / 2).attr('y', H - 8).attr('text-anchor','middle').attr('fill','var(--color-fg)').style('font-size','var(--sd-fs)').style('font-weight','var(--cds-font-weight-medium)').text(t);
+      }
+      if (cur.length && y68.length) { const xs = x(lab(cur[0])) - x.step() * x.paddingInner() / 2; svg.append('line').attr('x1', xs).attr('x2', xs).attr('y1', mg.t).attr('y2', H - mg.b).attr('stroke','var(--cds-chart-axis)').attr('stroke-dasharray','2 4'); }
+    }
+    stack.forEach((layer, i) => {
+      svg.append('g').selectAll('rect').data(layer).join('rect')
+        .attr('x', d => x(lab(d.data))).attr('width', x.bandwidth())
+        .attr('y', d => y(d[1])).attr('height', d => Math.max(0, y(d[0]) - y(d[1]) - 1))
+        .attr('fill', COL[keys[i]]).attr('opacity', d => TL && d.data.kind === 'y68' ? 0.7 : 1);
+    });
+    const ranked = [...bars].sort((a,b) => val(b) - val(a));
+    const showNums = x.bandwidth() >= 38;
+    svg.append('g').selectAll('text').data(bars).join('text').attr('x', d => x(lab(d)) + x.bandwidth()/2).attr('y', d => y(val(d)) - 5)
+      .attr('text-anchor','middle').attr('fill','var(--color-fg)').style('font-size','var(--sd-fs)').style('font-weight', d => isTop(d) ? 'var(--cds-font-weight-medium)' : null).each(function(d) {
+        const el = d3.select(this); el.text(null);
+        const rank = ranked.indexOf(d);
+        if (rank < 3) el.append('tspan').style('font-size', 'var(--sd-h)').text(['🥇','🥈','🥉'][rank] + (showNums ? ' ' : ''));
+        else if (isTop(d) && showNums) el.append('tspan').text('▲ ');
+        if (showNums) el.append('tspan').text(d3.format(',')(val(d)));
+      });
+    if (!TL) {
+      const pline = d3.line().x(d => x(lab(d)) + x.bandwidth()/2).y(d => y(pval(d)));
+      svg.append('path').datum(series).attr('d', pline).attr('fill','none').attr('stroke','var(--color-fg)').attr('stroke-width', 3).attr('stroke-dasharray','8 6').attr('stroke-linecap','round').attr('opacity', .75);
+      svg.append('g').selectAll('circle').data(series).join('circle').attr('cx', d => x(lab(d)) + x.bandwidth()/2).attr('cy', d => y(pval(d))).attr('r', 5).attr('fill','var(--color-panel)').attr('stroke','var(--color-fg)').attr('stroke-width', 2.5);
+    }
+    const ya = y(avgV);
+    svg.append('line').attr('x1', mg.l).attr('x2', W - mg.r).attr('y1', ya).attr('y2', ya).attr('stroke','var(--cds-chart-reference)').attr('stroke-dasharray','4 4');
+    avgLab.attr('x', W - mg.r + 8).attr('y', ya);
+    svg.append('g').selectAll('rect').data(series).join('rect').attr('x', d => x(lab(d)) - x.step()*x.paddingInner()/2).attr('width', x.step()).attr('y', mg.t).attr('height', H - mg.t - mg.b).attr('fill','transparent')
+      .on('mousemove', (ev, d) => {
+        tip.replaceChildren();
+        const has = d.kind === 'month' || d.kind === 'y68';
+        const h = document.createElement('div'); h.className='d'; h.textContent = has ? (TL ? d.label : d.month_name) + ' · ' + (NW ? 'เพื่อนสมาชิกใหม่ ' : 'รวม ') + d3.format(',')(val(d)) : d.month_name + ' · ยังไม่มีข้อมูลปีนี้'; tip.appendChild(h);
+        if (!TL || d.kind === 'month') { const pr = document.createElement('div'); pr.className = 'r'; const pa = document.createElement('span'); pa.textContent = 'ปี 2568'; const pb = document.createElement('span'); pb.textContent = d3.format(',')(pval(d)) + (d.kind === 'month' ? ' (' + pc(NW ? d.chg_new : d.chg_total) + ')' : ''); pr.append(pa, pb); tip.appendChild(pr); }
+        if (has && !NW) [...GORDER].reverse().map(c => [c, FN[c]]).forEach(([c, n]) => { const r = document.createElement('div'); r.className='r'; const a = document.createElement('span'); const w = document.createElement('i'); w.className='sw'; w.style.background = COL[c]; a.append(w, n); const b = document.createElement('span'); b.textContent = d[c]; r.append(a, b); tip.appendChild(r); });
+        tip.style.display = 'block';
+        const [px, py] = d3.pointer(ev, chart); const tw = tip.offsetWidth;
+        tip.style.left = Math.min(Math.max(0, px + 12), chart.clientWidth - tw) + 'px'; tip.style.top = Math.max(0, py - 40) + 'px';
+      })
+      .on('mouseleave', () => { tip.style.display = 'none'; });
+  } else if (m.status === 'error') {
+    failRow(tb, hcols.length); const d = document.createElement('div'); d.className='fail'; d.textContent='Failed to load'; chart.appendChild(d);
+  } else tb.replaceChildren();
+
+  colorCols(document.getElementById('monthly-table'));
+
+  // Highlights
+  const h = dash.data('highlights'); const g = document.getElementById('hl-grid');
+  g.replaceChildren();
+  if (h.status === 'ok') {
+    for (const r of h.data) {
+      const c = document.createElement('li'); c.id = 'hl-' + r.id;
+      const t = document.createElement('b'); t.textContent = r.title; t.setAttribute('data-source','highlights'); t.setAttribute('data-field','title'); t.setAttribute('data-where','id=' + r.id);
+      const p = document.createElement('span'); p.textContent = r.text; p.setAttribute('data-source','highlights'); p.setAttribute('data-field','text'); p.setAttribute('data-where','id=' + r.id);
+      c.append(t, ' — ', p); g.appendChild(c);
+    }
+  } else if (h.status === 'error') { const d = document.createElement('div'); d.className='fail'; d.textContent='Failed to load'; g.appendChild(d); }
+
+  // Tambon
+  applyCols();
+  const t = dash.data('tambon'); const tt = document.querySelector('#tambon-table tbody');
+  if (t.status === 'ok') {
+    tt.replaceChildren();
+    const vk = ['md','wd','ymd','ywd','mb','mg','new','total'];
+    const order = ['บางขุนเทียน','บางบอน'];
+    const D = t.data, tb = D.filter(r => r.level === 'tambon');
+    const sg = (v) => v == null ? '–' : (v > 0 ? '+' : '') + v.toFixed(1);
+    const row = (r, cls) => {
+      const tr = tt.insertRow(); tr.dataset.key = r.key; if (cls) tr.className = cls;
+      if (r.level === 'tambon') tr.title = 'ภาค' + r.phak + ' · เขต' + r.khet;
+      const cells = [r.name, ...vk.map(c => fmt(r[c])), fmt(r.p_total), r.yoy == null ? '–' : (r.yoy >= 0 ? '+' : '') + r.yoy.toFixed(1) + '%', fmt(r.tokan), r.rate == null ? '–' : r.rate.toFixed(1) + '%', sg(r.trend), sg(r.trend_new)];
+      cells.forEach((v, i) => { const td = tr.insertCell(); td.textContent = v; if (i === 0 && r.level !== 'all' && r.level !== 'phak') td.className = 'tb'; if (i === 10 && r.yoy != null) td.className = r.yoy >= 0 ? 'up' : 'down'; if (i === 13) td.className = r.trend >= 3 ? 'hot' : r.trend <= -3 ? 'cold' : ''; if (i === 14) td.className = r.trend_new >= 1 ? 'hot' : r.trend_new <= -1 ? 'cold' : ''; const raw = vk[i - 1]; if (i >= 1 && i <= 8 && raw && r[raw] < 1) td.className = 'cold'; });
+    };
+    const lv = dash.params().level || 'tambon';
+    const lvName = (LEVELS.find(x => x[0] === lv) || LEVELS[0])[1];
+    lvBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === lv)));
+    document.getElementById('tb-namehead').textContent = lvName;
+    document.getElementById('tb-title').textContent = 'ราย' + lvName + ' · เฉลี่ยต่อเดือน (ม.ค.–ก.ย.)';
+    const head = (text, cls) => { const g = tt.insertRow(); g.className = cls; const c = g.insertCell(); c.colSpan = 15; c.textContent = text; };
+    const byTotal = (a,b) => b.total - a.total;
+    if (lv === 'phak') D.filter(r => r.level === 'phak').sort(byTotal).forEach(r => row(r));
+    else for (const ph of order) {
+      head('ภาค' + ph, 'grp-phak');
+      if (lv === 'khet') D.filter(r => r.level === 'khet' && r.phak === ph).sort(byTotal).forEach(r => row(r));
+      else for (const kh of [...new Set(tb.filter(r => r.phak === ph).map(r => r.khet))].sort((a,b) => a.localeCompare(b, 'th'))) {
+        head('เขต' + kh, 'grp-khet');
+        tb.filter(r => r.phak === ph && r.khet === kh).sort(byTotal).forEach(r => row(r));
+      }
+    }
+    const A = D.find(r => r.level === 'all'); if (A) row(A, 'grp-all');
+    colorCols(document.getElementById('tambon-table'));
+  } else if (t.status === 'error') failRow(tt, 15); else tt.replaceChildren();
+
+});
+</script>
+
+<script>
+(function () {
+  const root = document.getElementById('dash-root');
+  const n = v => (v === null || v === undefined || v === '') ? 0 : Number(v);
+  const fInt = d3.format(','), f1 = d3.format('.1f');
+  const C = ['#2E9E8F', '#D9A23A', ...dash.colors.slice(2)];
+  const MR_BOY = '#3B82D6', MR_GIRL = '#E0679A';
+  root.style.setProperty('--mr-c1', C[0]);
+
+  dash.calc('bkt_monthly', {
+    inputs: ['bkt_members'],
+    title: 'บางขุนเทียน รายเดือน',
+    description: 'นับน้องที่ลงทะเบียนแต่ละเดือน แยกชาย-หญิง',
+    fn: (bkt_members) => {
+      const labels = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.'];
+      return labels.map((label, i) => {
+        const k = 'm' + String(i + 1).padStart(2, '0');
+        const came = bkt_members.filter(r => Number(r[k]) === 1);
+        const male = came.filter(r => r.sex === 'ชาย').length;
+        return { month: i + 1, label, male, female: came.length - male, total: came.length };
+      });
+    }
+  });
+
+  dash.calc('bkt_zones', {
+    inputs: ['bkt_members'],
+    title: 'บางขุนเทียน รายเขต',
+    description: 'จำนวนน้องชาย-หญิง และคนที่มาร่วมอย่างน้อย 1 ครั้ง แยกตามเขต',
+    fn: (bkt_members) => {
+      const order = ['การเคหะ', 'ท่าข้าม', 'เทียนทะเล', 'บางขุนเทียน', 'เพชรทองคำ'];
+      const zones = [...new Set([...order, ...bkt_members.map(r => r.zone)])].filter(z => bkt_members.some(r => r.zone === z));
+      return zones.map(zone => {
+        const rs = bkt_members.filter(r => r.zone === zone);
+        const male = rs.filter(r => r.sex === 'ชาย').length;
+        const active = rs.filter(r => (Number(r.attended) || 0) > 0).length;
+        return { zone, male, female: rs.length - male, total: rs.length, active, active_rate: Math.round(active / rs.length * 100) };
+      });
+    }
+  });
+
+  dash.calc('bkt_dist', {
+    inputs: ['bkt_members'],
+    title: 'บางขุนเทียน จำนวนครั้งที่มาร่วม',
+    description: 'จำนวนคนตามจำนวนครั้งที่มาร่วม 0 ถึงสูงสุด',
+    fn: (bkt_members) => {
+      const max = Math.max(0, ...bkt_members.map(r => Number(r.attended) || 0));
+      const out = [];
+      for (let k = 0; k <= max; k++) out.push({ times: k, people: bkt_members.filter(r => (Number(r.attended) || 0) === k).length });
+      return out;
+    }
+  });
+
+  dash.calc('bkt_grid', {
+    inputs: ['bkt_members'],
+    title: 'บางขุนเทียน ตารางการมาร่วม',
+    description: 'รายชื่อน้องพร้อมเครื่องหมาย ✓ ในเดือนที่ลงทะเบียน',
+    fn: (bkt_members) => bkt_members.map(r => {
+      const o = { id: r.id, nickname: r.nickname, sex: r.sex, zone: r.zone, attended: Number(r.attended) || 0 };
+      ['m01', 'm02', 'm03', 'm05', 'm07', 'm08', 'm09', 'm10'].forEach(k => { o[k] = Number(r[k]) === 1 ? '✓' : ''; });
+      return o;
+    })
+  });
+
+  dash.calc('bb_grid', {
+    inputs: ['bb_members'],
+    title: 'บางบอน ตารางการมาร่วม',
+    description: 'รายชื่อน้องพร้อมเครื่องหมาย ✓ ในเดือนที่มาร่วม',
+    fn: (bb_members) => bb_members.map(r => {
+      const o = { no: Number(r.no), nickname: r.nickname, zone: r.zone, attended: Number(r.attended) || 0 };
+      ['m01', 'm02', 'm05', 'm07', 'm08', 'm10'].forEach(k => { o[k] = Number(r[k]) === 1 ? '✓' : ''; });
+      return o;
+    })
+  });
+
+  dash.calc('mr_kpi', {
+    inputs: ['bkt_monthly', 'bkt_members', 'bb_monthly', 'bb_members'],
+    title: 'ตัวเลขสรุปรายภาค',
+    description: 'รวมยอดเข้าร่วม จำนวนครั้งที่จัด (เดือนที่ยอด > 0) ค่าเฉลี่ยต่อครั้ง และคนที่มาร่วมอย่างน้อย 1 ครั้ง ของแต่ละภาค',
+    fn: (bkt_monthly, bkt_members, bb_monthly, bb_members) => {
+      const num = v => Number(v) || 0;
+      const held1 = bkt_monthly.filter(r => num(r.total) > 0);
+      const held2 = bb_monthly.filter(r => num(r.total) > 0);
+      const att1 = held1.reduce((a, r) => a + num(r.total), 0);
+      const att2 = held2.reduce((a, r) => a + num(r.total), 0);
+      const active = bb_members.filter(r => num(r.attended) > 0).length;
+      const active1 = bkt_members.filter(r => num(r.attended) > 0).length;
+      return [
+        { region: 'บางขุนเทียน', members: bkt_members.length, attendance: att1, meetings: held1.length,
+          avg: Math.round(att1 / held1.length * 10) / 10, active: active1, active_rate: Math.round(active1 / bkt_members.length * 100) },
+        { region: 'บางบอน', members: bb_members.length, attendance: att2, meetings: held2.length,
+          avg: Math.round(att2 / held2.length * 10) / 10, active: active, active_rate: Math.round(active / bb_members.length * 100) },
+        (() => {
+          // รวมภาค 11: months where at least one region met; average = both regions' combined attendance per such month
+          const months = [...new Set([...held1, ...held2].map(r => String(r.month)))];
+          const members = bkt_members.length + bb_members.length, act = active1 + active;
+          return { region: 'รวมภาค 11', members, attendance: att1 + att2, meetings: months.length,
+            avg: Math.round((att1 + att2) / months.length * 10) / 10, active: act, active_rate: Math.round(act / members * 100) };
+        })()
+      ];
+    }
+  });
+
+  dash.calc('compare', {
+    inputs: ['bkt_monthly', 'bb_monthly'],
+    title: 'ยอดรายเดือนสองภาค',
+    description: 'จับคู่ยอดรายเดือนของบางขุนเทียนกับบางบอนตามเดือน',
+    fn: (bkt_monthly, bb_monthly) => bkt_monthly.map(r => {
+      const o = bb_monthly.find(b => String(b.month) === String(r.month));
+      return { month: Number(r.month), label: r.label, bkt: Number(r.total) || 0, bb: o ? (Number(o.total) || 0) : 0 };
+    })
+  });
+
+  dash.calc('bb_zones', {
+    inputs: ['bb_members'],
+    title: 'บางบอน รายเขต',
+    description: 'จำนวนรายชื่อ คนที่มาร่วมอย่างน้อย 1 ครั้ง และยอดสะสม แยกตามเขต',
+    fn: (bb_members) => {
+      const m = new Map();
+      bb_members.forEach(r => {
+        const z = m.get(r.zone) || { zone: r.zone, members: 0, active: 0, attendance: 0 };
+        z.members += 1; if ((Number(r.attended) || 0) > 0) z.active += 1; z.attendance += Number(r.attended) || 0;
+        m.set(r.zone, z);
+      });
+      return [...m.values()].map(z => ({ ...z, active_rate: Math.round(z.active / z.members * 100) })).sort((a, b) => b.members - a.members);
+    }
+  });
+
+  dash.calc('bb_dist', {
+    inputs: ['bb_members'],
+    title: 'บางบอน จำนวนครั้งที่มาร่วม',
+    description: 'จำนวนคนตามจำนวนครั้งที่มาร่วม 0 ถึงสูงสุด',
+    fn: (bb_members) => {
+      const max = Math.max(0, ...bb_members.map(r => Number(r.attended) || 0));
+      const out = [];
+      for (let k = 0; k <= max; k++) out.push({ times: k, people: bb_members.filter(r => (Number(r.attended) || 0) === k).length });
+      return out;
+    }
+  });
+
+  [['lg-c1', C[0]], ['lg-c2', C[1]], ['lg-m', MR_BOY], ['lg-f', MR_GIRL], ['lg-zm', MR_BOY], ['lg-zf', MR_GIRL], ['lg-zr', 'var(--cds-chart-muted)'], ['lg-za', C[0]], ['lg-br', 'var(--cds-chart-muted)'], ['lg-ba', C[0]], ['lg-bbm', C[1]]]
+    .forEach(([id, c]) => { const e = document.getElementById(id); if (e) e.style.background = c; });
+
+  function stateOf(ids) {
+    const s = ids.map(id => dash.data(id).status);
+    if (s.every(x => x === 'ok')) return 'ok';
+    if (s.some(x => x === 'error' || x === 'declined' || x === 'missing')) return 'error';
+    return 'loading';
+  }
+  function ready(el, ids) {
+    const st = stateOf(ids);
+    if (st === 'ok') { el.classList.remove('dash-skeleton'); return true; }
+    el.innerHTML = '';
+    if (st === 'error') {
+      el.classList.remove('dash-skeleton');
+      const d = document.createElement('div'); d.className = 'mr-fail';
+      d.appendChild(document.createElement('i'));
+      d.appendChild(document.createTextNode('โหลดไม่สำเร็จ'));
+      el.appendChild(d);
+    } else el.classList.add('dash-skeleton');
+    return false;
+  }
+
+  function bars(el, o) {
+    el.innerHTML = '';
+    const rows = o.rows;
+    const W = Math.max(260, el.clientWidth || 600), H = o.height || 400;
+    const mT = 22, mR = 4;
+    let mB = 32;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).style('display', 'block');
+    // x labels first: shrink, then stagger onto two rows, so every label stays readable
+    const xl = svg.append('g').selectAll('text').data(rows).join('text').attr('class', 'mr-tick').attr('text-anchor', 'middle').text(r => o.label(r));
+    const widest = () => { let m = 0; xl.each(function () { m = Math.max(m, this.getComputedTextLength()); }); return m; };
+    const approxStep = (W - 40) / Math.max(1, rows.length);
+    let lw = widest(), stagger = false;
+    if (lw > approxStep - 6) { xl.style('font-size', 'calc(var(--sd-fs) * .7)'); lw = widest(); }
+    if (lw > approxStep - 6) { stagger = true; mB = 52; }
+    const maxV = o.stacked ? d3.max(rows, r => d3.sum(o.series, s => n(r[s.key]))) : d3.max(rows, r => d3.max(o.series, s => n(r[s.key])));
+    const y = d3.scaleLinear([0, Math.max(1, maxV)], [H - mB, mT]).nice();
+    const ticks = y.ticks(Math.max(2, Math.floor((H - mB - mT) / 45))).filter(t => Number.isInteger(t));
+    const gy = svg.insert('g', ':first-child');
+    const tt = gy.selectAll('text').data(ticks).join('text').attr('class', 'mr-tick').attr('text-anchor', 'end').attr('dy', '0.32em').attr('y', d => y(d)).text(d => fInt(d));
+    let mL = 0; tt.each(function () { mL = Math.max(mL, this.getComputedTextLength()); }); mL += 10;
+    tt.attr('x', mL - 6);
+    gy.selectAll('line').data(ticks).join('line').attr('x1', mL).attr('x2', W - mR).attr('y1', d => y(d)).attr('y2', d => y(d))
+      .attr('stroke', d => d === 0 ? 'var(--cds-chart-axis)' : 'var(--cds-chart-grid)').attr('stroke-width', 1);
+    const x0 = d3.scaleBand(rows.map(r => String(r[o.x])), [mL, W - mR]).paddingInner(0.25).paddingOuter(0.15);
+    const baseY = H - mB + 22;
+    xl.attr('x', r => x0(String(r[o.x])) + x0.bandwidth() / 2).attr('y', (r, i) => stagger && i % 2 ? baseY + 20 : baseY);
+    if (stagger && lw > 2 * x0.step() - 6) { const every = Math.ceil((lw + 6) / (2 * x0.step())) * 2; xl.attr('display', (d, i) => (i % every < 2) ? null : 'none'); }
+    const g = svg.append('g');
+    rows.forEach(r => {
+      const bx = x0(String(r[o.x])), bw = x0.bandwidth();
+      if (o.stacked) {
+        const w = Math.min(bw, 40), off = bx + (bw - w) / 2; let acc = 0;
+        o.series.forEach(s => {
+          const v = n(r[s.key]); if (!v) return;
+          const y1 = y(acc + v), y2 = y(acc);
+          g.append('rect').attr('x', off).attr('width', w).attr('y', y1).attr('height', Math.max(0, y2 - y1)).attr('fill', s.color);
+          if (y2 - y1 > 20 && w > 18) g.append('text').attr('class', 'mr-vlab').attr('x', off + w / 2).attr('y', (y1 + y2) / 2).attr('dy', '0.35em').attr('text-anchor', 'middle').text(fInt(v));
+          acc += v;
+        });
+        if (acc && o.totalLabel !== false && w >= 14) g.append('text').attr('class', 'mr-vlab-out').attr('x', off + w / 2).attr('y', y(acc) - 5).attr('text-anchor', 'middle').text(fInt(acc));
+      } else {
+        const x1 = d3.scaleBand(o.series.map(s => s.key), [0, bw]).padding(0.12);
+        o.series.forEach(s => {
+          const v = n(r[s.key]); const w = Math.min(x1.bandwidth(), 32);
+          const xx = bx + x1(s.key) + (x1.bandwidth() - w) / 2;
+          if (!v) return;
+          g.append('rect').attr('x', xx).attr('width', w).attr('y', y(v)).attr('height', y(0) - y(v)).attr('rx', Math.min(4, w / 2)).attr('fill', s.color);
+          if (w >= 12) {
+            const t = g.append('text').attr('class', 'mr-vlab-out').attr('x', xx + w / 2).attr('y', y(v) - 4).attr('text-anchor', 'middle').text(fInt(v));
+            if (t.node().getComputedTextLength() > x1.step() - 2) t.remove();
+          }
+        });
+      }
+      const note = o.note ? o.note(r) : '';
+      if (note) {
+        const t = g.append('text').attr('class', 'mr-noteLab').attr('x', bx + bw / 2).attr('y', y(0) - 6).attr('text-anchor', 'middle').text(note);
+        if (t.node().getComputedTextLength() > x0.step() - 4) t.remove();
+      }
+    });
+    const tip = d3.select(el).append('div').attr('class', 'mr-tip').style('display', 'none');
+    svg.append('g').selectAll('rect').data(rows).join('rect')
+      .attr('x', r => x0(String(r[o.x])) - (x0.step() - x0.bandwidth()) / 2).attr('width', x0.step())
+      .attr('y', mT).attr('height', H - mB - mT).attr('fill', 'transparent')
+      .on('mousemove', (ev, r) => {
+        tip.style('display', null).html('');
+        const note = o.note ? o.note(r) : '';
+        tip.append('div').attr('class', 'mr-tip-h').text(o.label(r) + (note ? ' · ' + note : ''));
+        o.series.forEach(s => {
+          const line = tip.append('div');
+          if (o.series.length > 1) line.append('span').attr('class', 'mr-sw').style('background', s.color);
+          line.append('span').text(s.name + ' ');
+          line.append('span').attr('class', 'mr-b').text(fInt(n(r[s.key])));
+        });
+        if (o.extra) o.extra(r).forEach(t => tip.append('div').text(t));
+        const [px, py] = d3.pointer(ev, el);
+        const tw = tip.node().offsetWidth, ew = el.clientWidth;
+        let left = px + 12; if (left + tw > ew) left = px - tw - 12; if (left < 0) left = 0;
+        tip.style('left', left + 'px').style('top', Math.max(0, py - 12) + 'px');
+      })
+      .on('mouseleave', () => tip.style('display', 'none'));
+  }
+
+  function fillValues() {
+    root.querySelectorAll('.mr-v[data-source]').forEach(el => {
+      const d = dash.data(el.dataset.source);
+      if (d.status !== 'ok') {
+        if (d.status === 'loading') el.classList.add('dash-skeleton'); else el.classList.remove('dash-skeleton');
+        el.textContent = '—'; return;
+      }
+      el.classList.remove('dash-skeleton');
+      const where = new URLSearchParams(el.dataset.where || '');
+      const row = (d.data || []).find(r => [...where].every(([k, v]) => String(r[k]) === v));
+      const v = row ? row[el.dataset.field] : null;
+      if (v === null || v === undefined) { el.textContent = '—'; return; }
+      const f = el.dataset.fmt;
+      el.textContent = f === 'pct' ? fInt(v) + '%' : f === '1f' ? f1(v) : fInt(v);
+    });
+  }
+
+  // name tables (same look for both areas)
+  function gridTable(cfg) {
+    let key = 'attended', dir = -1, q = '';
+    const table = document.getElementById(cfg.table), body = table.querySelector('tbody');
+    const nCols = table.querySelectorAll('th').length;
+    table.querySelectorAll('th button').forEach(b => b.addEventListener('click', () => {
+      const k = b.dataset.k;
+      if (key === k) dir = -dir; else { key = k; dir = (k === 'attended' || cfg.months.includes(k)) ? -1 : 1; }
+      draw();
+    }));
+    document.getElementById(cfg.search).addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); draw(); });
+    function draw() {
+      const d = dash.data(cfg.source);
+      body.innerHTML = '';
+      table.querySelectorAll('th').forEach(th => {
+        if (th.dataset.field === key) th.setAttribute('aria-sort', dir > 0 ? 'ascending' : 'descending'); else th.removeAttribute('aria-sort');
+      });
+      if (d.status !== 'ok') {
+        const tr = body.insertRow(); const td = tr.insertCell(); td.colSpan = nCols;
+        if (d.status === 'loading') { td.className = 'dash-skeleton'; td.textContent = '—'; }
+        else { const f = document.createElement('div'); f.className = 'mr-fail'; f.appendChild(document.createElement('i')); f.appendChild(document.createTextNode('โหลดไม่สำเร็จ')); td.appendChild(f); }
+        return;
+      }
+      const isNum = k => k === 'attended' || k === cfg.numKey;
+      const rows = d.data
+        .filter(r => !q || [r.nickname, r.zone].join(' ').toLowerCase().includes(q))
+        .slice()
+        .sort((a, b) => {
+          let c;
+          if (isNum(key)) c = n(a[key]) - n(b[key]);
+          else if (cfg.months.includes(key)) c = (a[key] ? 1 : 0) - (b[key] ? 1 : 0);
+          else c = String(a[key] || '').localeCompare(String(b[key] || ''), 'th');
+          return c * dir || cfg.tie(a, b);
+        });
+      rows.forEach(r => {
+        const tr = body.insertRow();
+        if (n(r.attended) === 0) tr.className = 'mr-zero';
+        cfg.cols.forEach(col => {
+          const c = tr.insertCell();
+          if (col.cls) c.className = col.cls;
+          c.textContent = col.fmt ? col.fmt(r[col.k]) : String(r[col.k] ?? '');
+        });
+        cfg.months.forEach(k => { const c = tr.insertCell(); c.className = 'mr-m'; c.textContent = r[k] || ''; });
+      });
+    }
+    return draw;
+  }
+
+  const drawBktTable = gridTable({
+    table: 'bkt-table', search: 'bkt-search', source: 'bkt_grid',
+    months: ['m01', 'm02', 'm03', 'm05', 'm07', 'm08', 'm09', 'm10'],
+    cols: [{ k: 'id' }, { k: 'nickname' }, { k: 'sex', cls: 'mr-hide-sm' }, { k: 'zone' }, { k: 'attended', cls: 'num', fmt: v => fInt(n(v)) }],
+    tie: (a, b) => String(a.id).localeCompare(String(b.id))
+  });
+  const drawTable = gridTable({
+    table: 'bb-table', search: 'bb-search', source: 'bb_grid', numKey: 'no',
+    months: ['m01', 'm02', 'm05', 'm07', 'm08', 'm10'],
+    cols: [{ k: 'no', cls: 'num' }, { k: 'nickname' }, { k: 'zone' }, { k: 'attended', cls: 'num', fmt: v => fInt(n(v)) }],
+    tie: (a, b) => n(a.no) - n(b.no)
+  });
+
+  dash.onData(() => {
+    fillValues();
+
+    const elC = document.getElementById('ch-compare');
+    if (ready(elC, ['compare'])) bars(elC, {
+      rows: dash.data('compare').data, x: 'month', label: r => r.label,
+      stacked: true,
+      series: [{ key: 'bkt', name: 'บางขุนเทียน', color: C[0] }, { key: 'bb', name: 'บางบอน', color: C[1] }],
+      note: r => (n(r.bkt) === 0 && n(r.bb) === 0) ? 'ไม่ได้จัด' : '',
+      extra: r => (n(r.bkt) + n(r.bb)) ? ['รวมภาค 11 ' + fInt(n(r.bkt) + n(r.bb)) + ' คน'] : []
+    });
+
+    const elM = document.getElementById('ch-bkt-monthly');
+    if (ready(elM, ['bkt_monthly'])) bars(elM, {
+      rows: dash.data('bkt_monthly').data, x: 'month', label: r => r.label, stacked: true,
+      series: [{ key: 'male', name: 'ชาย', color: MR_BOY }, { key: 'female', name: 'หญิง', color: MR_GIRL }],
+      extra: r => n(r.total) ? ['รวม ' + fInt(n(r.total)) + ' คน'] : ['ไม่มียอด']
+    });
+
+    const elBA = document.getElementById('ch-bkt-active');
+    if (ready(elBA, ['bkt_zones'])) bars(elBA, {
+      rows: dash.data('bkt_zones').data, x: 'zone', label: r => r.zone,
+      series: [{ key: 'total', name: 'รายชื่อทั้งหมด', color: 'var(--cds-chart-muted)' }, { key: 'active', name: 'มาร่วมแล้ว', color: C[0] }],
+      extra: r => ['ชาย ' + fInt(n(r.male)) + ' · หญิง ' + fInt(n(r.female)), 'มาร่วมแล้ว ' + fInt(n(r.active_rate)) + '%']
+    });
+
+    const elBD = document.getElementById('ch-bkt-dist');
+    if (ready(elBD, ['bkt_dist'])) bars(elBD, {
+      rows: dash.data('bkt_dist').data, x: 'times', label: r => r.times + ' ครั้ง',
+      series: [{ key: 'people', name: 'จำนวนคน', color: C[0] }]
+    });
+
+    drawBktTable();
+
+    const elB = document.getElementById('ch-bb-monthly');
+    if (ready(elB, ['bb_monthly'])) bars(elB, {
+      rows: dash.data('bb_monthly').data, x: 'month', label: r => r.label,
+      series: [{ key: 'total', name: 'มาร่วม', color: C[1] }],
+      note: r => n(r.total) === 0 ? 'ไม่ได้จัด' : ''
+    });
+
+    const elBZ = document.getElementById('ch-bb-zones');
+    if (ready(elBZ, ['bb_zones'])) bars(elBZ, {
+      rows: dash.data('bb_zones').data, x: 'zone', label: r => r.zone,
+      series: [{ key: 'members', name: 'รายชื่อทั้งหมด', color: 'var(--cds-chart-muted)' }, { key: 'active', name: 'มาร่วมแล้ว', color: C[0] }],
+      extra: r => ['มาร่วมแล้ว ' + fInt(n(r.active_rate)) + '% · ยอดสะสม ' + fInt(n(r.attendance)) + ' คน-ครั้ง']
+    });
+
+    const elD = document.getElementById('ch-bb-dist');
+    if (ready(elD, ['bb_dist'])) bars(elD, {
+      rows: dash.data('bb_dist').data, x: 'times', label: r => r.times + ' ครั้ง',
+      series: [{ key: 'people', name: 'จำนวนคน', color: C[0] }]
+    });
+
+    drawTable();
+  });
+})();
+</script>
+<script src="mr-export.js"></script>
+
+</div>
 </body>
 </html>
