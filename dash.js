@@ -5,9 +5,6 @@
     attendance: 'data/attendance.json',
     attendance68: 'data/attendance68.json',
     tokan: 'data/tokan.json',
-    bb_members: 'data/bb_members.csv',
-    bb_monthly: 'data/bb_monthly.csv',
-    bkt_members: 'data/bkt_members.csv',
   };
   const ds = {}, calcs = {}, subs = [];
   let params = {}, pending = false;
@@ -25,8 +22,8 @@
   Object.keys(SRC).forEach(id => {
     ds[id] = { status: 'loading', data: [] };
     fetch(SRC[id])
-      .then(r => { if (!r.ok) throw new Error(r.status); return id.startsWith('bb_') || id.startsWith('bkt_') ? r.text() : r.json(); })
-      .then(x => { ds[id] = { status: 'ok', data: typeof x === 'string' ? d3.csvParse(x) : x }; })
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(x => { ds[id] = { status: 'ok', data: x }; })
       .catch(e => { console.error(id, e); ds[id] = { status: 'error', data: [] }; })
       .then(notify);
   });
