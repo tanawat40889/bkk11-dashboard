@@ -20,5 +20,5 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; }
 body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); }
-#dash-root { max-width: 1400px; margin: 0 auto; padding: 16px; }
+#dash-root { width: 100%; padding: 16px; }
 .dash-skeleton { opacity: .35; }
