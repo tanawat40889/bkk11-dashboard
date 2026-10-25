@@ -79,8 +79,9 @@
 .sd .exp-out img{display:block;max-width:100%;max-height:60vh;margin-top:var(--cds-gap-sm);border:1px solid var(--color-border-line);border-radius:var(--cds-radius)}
 .sd .exp-out .row{display:flex;flex-wrap:wrap;gap:var(--cds-gap-sm);align-items:center;justify-content:space-between}
 .sd .exp-out a,.sd .exp-out button{font:inherit;color:var(--color-fg)}
-.sd .exporting .tw{max-height:none !important;overflow:visible !important}
-.sd .exporting .tw thead th,.sd .exporting .tw th:first-child,.sd .exporting .tw td:first-child{position:static !important}
+.exporting .tw{max-height:none !important;overflow:visible !important}
+.sd.exporting{padding:var(--cds-pad-lg)}
+.exporting .tw thead th,.exporting .tw th:first-child,.exporting .tw td:first-child{position:static !important}
 .sd .chk{display:flex;align-items:center;gap:8px;font-size:var(--sd-fs);cursor:pointer;color:var(--color-fg)}
 .sd .chk input{width:1.2em;height:1.2em;accent-color:var(--color-fg)}
 .sd tr.yr td{background:var(--color-bg);font-weight:var(--cds-font-weight-medium);text-align:left}
@@ -103,11 +104,21 @@
 [data-dash-source-state=refreshing]{opacity:.5;transition:opacity var(--cds-dur-slow)}
 .sd .fail{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--color-fg-muted);font-size:var(--sd-fs);min-height:inherit}
 .sd [hidden]{display:none !important}
-.sd .share summary{cursor:pointer;list-style:none}
-.sd .share summary::-webkit-details-marker{display:none}
-.sd .share summary h2{display:inline;margin:0}
-.sd .share summary::after{content:" ▾";color:var(--color-fg-muted)}
-.sd .share[open] summary::after{content:" ▴"}
+.sd .hd-row{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--cds-gap-md)}
+.sd .menu{position:relative;flex:none}
+.sd .menu summary{list-style:none;cursor:pointer;font-size:var(--sd-fs);padding:var(--cds-pad-xs) var(--cds-pad-md);border-radius:999px;border:1px solid var(--color-border-line);background:var(--color-panel);color:var(--color-fg);white-space:nowrap}
+.sd .menu summary::-webkit-details-marker{display:none}
+.sd .menu[open] summary{background:var(--color-fg);color:var(--color-bg);border-color:var(--color-fg)}
+.sd .menu-box{position:absolute;z-index:6;top:calc(100% + 6px);right:0;min-width:16rem;background:var(--cds-surface-popover);border:1px solid var(--cds-border);border-radius:var(--cds-radius);box-shadow:var(--cds-shadow-popover);padding:var(--cds-pad-xs);display:flex;flex-direction:column}
+.sd .menu-box button{font:inherit;font-size:var(--sd-fs);text-align:left;padding:var(--cds-pad-sm) var(--cds-pad-md);border:none;border-radius:calc(var(--cds-radius) - 4px);background:none;color:var(--color-fg);cursor:pointer;white-space:nowrap}
+.sd .menu-box button:hover,.sd .menu-box button:focus-visible{background:var(--color-bg)}
+.sd .menu-box button[disabled]{opacity:.6;cursor:progress}
+.sd .menu-box .hint{display:block;font-size:calc(var(--sd-fs) * .8);color:var(--color-fg-muted)}
+.sd dialog.dlg{width:min(40rem,calc(100vw - 32px));max-height:calc(100vh - 32px);padding:0;border:1px solid var(--cds-border);border-radius:var(--cds-radius);background:var(--color-panel);color:var(--color-fg);box-shadow:var(--cds-shadow-popover)}
+.sd dialog.dlg::backdrop{background:rgba(0,0,0,.4)}
+.sd .dlg-head{display:flex;align-items:center;justify-content:space-between;gap:var(--cds-gap-sm);padding:var(--cds-pad-md) var(--cds-pad-lg);border-bottom:1px solid var(--color-border-line);position:sticky;top:0;background:var(--color-panel);z-index:1}
+.sd .dlg-head h2{margin:0}
+.sd .dlg-body{padding:0 var(--cds-pad-lg) var(--cds-pad-lg)}
 .sd .share-acts{display:flex;flex-wrap:wrap;align-items:center;gap:var(--cds-gap-sm);margin:var(--cds-gap-md) 0}
 .sd .share-list{display:flex;flex-direction:column}
 .sd .share-row{display:flex;align-items:center;gap:var(--cds-gap-sm);padding:var(--cds-pad-sm) 0;border-bottom:1px solid var(--color-border-line);min-width:0}
@@ -128,10 +139,21 @@
 <div class="app">
 <div class="tabpane" data-tab="dialog">
 <div class="sd">
-  <header id="top">
-    <h1 id="page-title">สนทนาธรรม 4 ฝ่าย รวมภาคกรุงเทพ 11</h1>
-    <p class="lede" id="page-sub" hidden></p>
+  <header id="top" class="hd-row">
+    <div>
+      <h1 id="page-title">สนทนาธรรม 4 ฝ่าย รวมภาคกรุงเทพ 11</h1>
+      <p class="lede" id="page-sub" hidden></p>
+    </div>
+    <details class="menu no-export" id="menu">
+      <summary aria-label="เมนู">⚙️ เมนู</summary>
+      <div class="menu-box" role="menu">
+        <button type="button" role="menuitem" id="m-share" hidden>🔗 ลิงก์สำหรับแชร์พื้นที่<span class="hint">ส่งลิงก์ให้พื้นที่ย่อยดูข้อมูลของตัวเอง</span></button>
+        <button type="button" role="menuitem" id="m-capture">📷 บันทึกภาพทั้งหน้า<span class="hint">ไฟล์ PNG ของ dashboard ทั้งหมด</span></button>
+        <button type="button" role="menuitem" id="m-xlsx">📊 Export ข้อมูลเป็น Excel<span class="hint">ไฟล์ .xlsx รายเดือน รายพื้นที่ และข้อมูลดิบ</span></button>
+      </div>
+    </details>
   </header>
+  <div class="exp-out no-export" id="top-out"></div>
 
   <section class="tiles" id="kpis">
     <div class="card tile"><div class="lab">ผู้เข้าร่วมรวม 9 เดือน (คน)</div><div class="big dash-skeleton" data-source="kpi" data-field="total">—</div><div class="sub">จำนวนคนสะสม</div><div class="yoy dash-skeleton" data-source="kpi" data-field="total_yoy">—</div></div>
@@ -175,12 +197,14 @@
     </div>
   </section>
 
-  <details class="card share no-export" id="share-section" hidden>
-    <summary><h2>🔗 แชร์ลิงก์ให้พื้นที่ย่อย</h2></summary>
-    <p class="note">แต่ละลิงก์เปิดแล้วจะเห็นเฉพาะข้อมูลของพื้นที่นั้น และแชร์ต่อให้พื้นที่ย่อยลงไปได้</p>
-    <div class="share-acts"><button type="button" class="exp-btn" id="share-all">คัดลอกทั้งหมด</button><span class="note" id="share-msg" style="margin:0"></span></div>
-    <div class="share-list" id="share-list"></div>
-  </details>
+  <dialog class="dlg no-export" id="share-dlg" aria-labelledby="share-h">
+    <div class="dlg-head"><h2 id="share-h">🔗 ลิงก์สำหรับแชร์พื้นที่</h2><button type="button" class="exp-btn" id="share-close">ปิด ✕</button></div>
+    <div class="dlg-body">
+      <p class="note">แต่ละลิงก์เปิดแล้วจะเห็นเฉพาะข้อมูลของพื้นที่นั้น และแชร์ต่อให้พื้นที่ย่อยลงไปได้</p>
+      <div class="share-acts"><button type="button" class="exp-btn" id="share-all">คัดลอกทั้งหมด</button><span class="note" id="share-msg" style="margin:0"></span></div>
+      <div class="share-list" id="share-list"></div>
+    </div>
+  </dialog>
 </div>
 </div>
 </div>
@@ -374,40 +398,124 @@ function failRow(tbody, n) { tbody.replaceChildren(); const tr = tbody.insertRow
 let DL = null;
 try { window.claude && window.claude.use && window.claude.use('downloads').then(x => { DL = x; }).catch(() => {}); } catch (e) {}
 const stamp = () => { const d = new Date(); const p = (n) => String(n).padStart(2, '0'); return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()); };
-document.querySelectorAll('.exp-btn[data-target]').forEach(btn => btn.addEventListener('click', async () => {
-  const sec = document.getElementById(btn.dataset.target), out = sec.querySelector('.exp-out');
-  const filename = 'สนทนาธรรม-' + (AREA ? AREA_NAME + '-' : '') + btn.dataset.name + '-' + stamp() + '.png';
-  out.replaceChildren(); btn.disabled = true; const label = btn.textContent; btn.textContent = 'กำลังสร้างภาพ…';
+const fileBase = () => 'สนทนาธรรม-' + (AREA ? AREA_NAME + '-' : '');
+// Saves through the host's download API when there is one, else a plain link click. Returns 'saved' | 'linked' | 'declined'.
+async function saveBlob(blob, filename) {
+  if (DL) {
+    try { await DL.save({ filename, data: blob }); return 'saved'; }
+    catch (e) { if (e && e.code === 'declined') return 'declined'; }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  return 'linked';
+}
+function showOut(out, text, imgBlob) {
+  out.replaceChildren();
+  const row = document.createElement('div'); row.className = 'row';
+  const msg = document.createElement('span'); msg.textContent = text;
+  const close = document.createElement('button'); close.type = 'button'; close.textContent = 'ปิด ✕'; close.style.cssText = 'background:none;border:none;cursor:pointer';
+  let url = null;
+  close.addEventListener('click', () => { out.replaceChildren(); if (url) URL.revokeObjectURL(url); });
+  row.append(msg, close); out.appendChild(row);
+  if (imgBlob) { url = URL.createObjectURL(imgBlob); const img = document.createElement('img'); img.src = url; img.alt = ''; out.appendChild(img); }
+}
+async function capture(el, name, out, btn) {
+  const filename = fileBase() + name + '-' + stamp() + '.png';
+  out.replaceChildren(); btn.disabled = true; const label = btn.innerHTML; btn.textContent = 'กำลังสร้างภาพ…';
   try {
     if (!window.htmlToImage) throw new Error('no-lib');
-    sec.classList.add('exporting');
-    const bg = getComputedStyle(sec).backgroundColor;
-    const blob = await window.htmlToImage.toBlob(sec, { pixelRatio: 2, backgroundColor: bg, filter: (n) => !(n.classList && n.classList.contains('no-export')) });
-    sec.classList.remove('exporting');
+    el.classList.add('exporting');
+    const bg = getComputedStyle(el).backgroundColor;
+    const blob = await window.htmlToImage.toBlob(el, { pixelRatio: 2, backgroundColor: bg === 'rgba(0, 0, 0, 0)' ? getComputedStyle(document.body).backgroundColor : bg, filter: (n) => !(n.classList && n.classList.contains('no-export')) });
+    el.classList.remove('exporting');
     if (!blob) throw new Error('empty');
-    let saved = false;
-    if (DL) {
-      try { await DL.save({ filename, data: blob }); saved = true; }
-      catch (e) { if (e && e.code === 'declined') { btn.disabled = false; btn.textContent = label; return; } }
-    }
-    const url = URL.createObjectURL(blob);
-    if (!saved) { const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); }
-    const row = document.createElement('div'); row.className = 'row';
-    const msg = document.createElement('span'); msg.textContent = saved ? 'บันทึกภาพแล้ว' : 'ถ้าไฟล์ไม่ถูกดาวน์โหลดอัตโนมัติ: คลิกขวาที่ภาพ › บันทึกรูปภาพ (มือถือ: กดค้างที่ภาพ)';
-    const close = document.createElement('button'); close.type = 'button'; close.textContent = 'ปิด ✕'; close.style.cssText = 'background:none;border:none;cursor:pointer';
-    close.addEventListener('click', () => { out.replaceChildren(); URL.revokeObjectURL(url); });
-    row.append(msg, close); out.appendChild(row);
-    const img = document.createElement('img'); img.src = url; img.alt = filename; out.appendChild(img);
+    const r = await saveBlob(blob, filename);
+    if (r !== 'declined') showOut(out, r === 'saved' ? 'บันทึกภาพแล้ว' : 'ถ้าไฟล์ไม่ถูกดาวน์โหลดอัตโนมัติ: คลิกขวาที่ภาพ › บันทึกรูปภาพ (มือถือ: กดค้างที่ภาพ)', blob);
   } catch (e) {
-    sec.classList.remove('exporting');
+    el.classList.remove('exporting');
     out.textContent = 'สร้างภาพไม่สำเร็จ ลองใหม่อีกครั้ง หรือใช้การแคปหน้าจอแทน';
   }
-  btn.disabled = false; btn.textContent = label;
+  btn.disabled = false; btn.innerHTML = label;
+}
+document.querySelectorAll('.exp-btn[data-target]').forEach(btn => btn.addEventListener('click', () => {
+  const sec = document.getElementById(btn.dataset.target);
+  capture(sec, btn.dataset.name, sec.querySelector('.exp-out'), btn);
 }));
+
+// Top menu
+const menu = document.getElementById('menu'), topOut = document.getElementById('top-out');
+const closeMenu = () => { menu.open = false; };
+document.addEventListener('click', e => { if (menu.open && !menu.contains(e.target)) closeMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+document.getElementById('m-capture').addEventListener('click', e => {
+  closeMenu();
+  capture(document.querySelector('.app .sd'), 'ทั้งหน้า', topOut, e.currentTarget);
+});
+
+// SheetJS is only needed for the export, so it loads on first use.
+let xlsxLib = null;
+const loadXlsx = () => xlsxLib || (xlsxLib = new Promise((ok, fail) => {
+  if (window.XLSX) return ok(window.XLSX);
+  const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+  sc.onload = () => window.XLSX ? ok(window.XLSX) : fail(new Error('no-lib'));
+  sc.onerror = () => { xlsxLib = null; fail(new Error('load')); };
+  document.head.appendChild(sc);
+}));
+function buildWorkbook(X) {
+  const m = dash.data('monthly'), t = dash.data('tambon'), a = dash.data('attendance'), a68 = dash.data('attendance68');
+  if ([m, t, a, a68].some(d => d.status !== 'ok')) throw new Error('data');
+  const vk = ['md','wd','ymd','ywd','mb','mg','new','total'];
+  const vn = [...F.map(f => f[1]), 'รวม'];
+  const num = v => v == null || Number.isNaN(v) ? null : v;
+  const sheet = (rows, widths) => { const ws = X.utils.aoa_to_sheet(rows); ws['!cols'] = widths.map(w => ({ wch: w })); return ws; };
+  const wb = X.utils.book_new();
+
+  const scopeName = sc => sc === 'รวมภาค' ? (AREA ? AREA_NAME : 'รวมภาคกรุงเทพ 11') : sc.startsWith('เขต:') ? 'เขต' + sc.split('/')[1] : 'ภาค' + sc;
+  const mRows = [['พื้นที่', 'เดือน', ...vn, 'ปี 2568 เดือนเดียวกัน', 'เทียบปีที่แล้ว (%)']];
+  const scopesSeen = [...new Set(m.data.map(r => r.scope))];
+  // On an area link, a ภาค scope equals the area itself, so leave it out.
+  for (const sc of scopesSeen.filter(sc => !(ALV >= 1 && PHAKS.includes(sc)) && !(ALV >= 2 && sc.startsWith('เขต:')))) {
+    const rs = m.data.filter(r => r.scope === sc && ['month', 'sum', 'avg'].includes(r.kind)).sort((x, y) => x.month - y.month);
+    for (const r of rs) mRows.push([scopeName(sc), r.kind === 'month' ? r.month_name + ' 69' : r.month_name, ...vk.map(c => num(r[c])), num(r.p_total), num(r.chg_total)]);
+  }
+  X.utils.book_append_sheet(wb, sheet(mRows, [22, 10, ...vk.map(() => 9), 14, 12]), 'รายเดือน');
+
+  const lvName = { tambon: 'ตำบล', khet: 'เขต', phak: 'ภาค', all: 'รวม' };
+  const lvDepth = { all: 0, phak: 1, khet: 2, tambon: 3 };
+  const tRows = [['ระดับ', 'ภาค', 'เขต', 'ชื่อ', ...vn.map(n => n + ' (คน/เดือน)'), 'ปี 2568 (คน/เดือน)', 'เทียบปีที่แล้ว (%)', 'โทกัง (คน)', 'มาร่วมเทียบโทกัง (%)', 'แนวโน้มเทียบปีที่แล้ว (คน/เดือน)', 'แนวโน้มเพื่อนสมาชิกใหม่ (คน/เดือน)']];
+  const keep = t.data.filter(r => lvDepth[r.level] > ALV || (r.level === 'all' && ALV < 3));
+  const th = (x, y) => (x || '').localeCompare(y || '', 'th');
+  keep.sort((x, y) => lvDepth[y.level] - lvDepth[x.level] || th(x.phak, y.phak) || th(x.khet, y.khet) || y.total - x.total);
+  for (const r of keep) tRows.push([lvName[r.level], r.phak || '', r.khet || '', r.name, ...vk.map(c => num(r[c])), num(r.p_total), num(r.yoy), num(r.tokan), num(r.rate), num(r.trend), num(r.trend_new)]);
+  X.utils.book_append_sheet(wb, sheet(tRows, [8, 14, 14, 22, ...vk.map(() => 12), 14, 12, 10, 14, 16, 18]), 'รายพื้นที่ (เฉลี่ย)');
+
+  const raw = (rows, yr) => [['ปี', 'เดือน', 'ภาค', 'เขต', 'ตำบล', ...vn], ...rows.slice().sort((x, y) => x.month - y.month || th(x.phak, y.phak) || th(x.khet, y.khet) || th(x.tambon, y.tambon))
+    .map(r => [yr, r.month_name, r.phak, r.khet, r.tambon, ...vk.map(c => num(Number(r[c])))])];
+  X.utils.book_append_sheet(wb, sheet(raw(a.data, 2569), [6, 8, 14, 14, 18, ...vk.map(() => 8)]), 'ข้อมูลดิบ 2569');
+  X.utils.book_append_sheet(wb, sheet(raw(a68.data, 2568), [6, 8, 14, 14, 18, ...vk.map(() => 8)]), 'ข้อมูลดิบ 2568');
+  return wb;
+}
+document.getElementById('m-xlsx').addEventListener('click', async e => {
+  const btn = e.currentTarget; closeMenu();
+  btn.disabled = true; topOut.textContent = 'กำลังสร้างไฟล์ Excel…';
+  try {
+    const X = await loadXlsx();
+    const wb = buildWorkbook(X);
+    const buf = X.write(wb, { bookType: 'xlsx', type: 'array' });
+    const filename = fileBase() + 'ข้อมูล-' + stamp() + '.xlsx';
+    const r = await saveBlob(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), filename);
+    if (r === 'declined') topOut.replaceChildren(); else showOut(topOut, (r === 'saved' ? 'บันทึกไฟล์แล้ว: ' : 'ดาวน์โหลดไฟล์แล้ว: ') + filename);
+  } catch (err) {
+    topOut.textContent = err.message === 'data' ? 'ข้อมูลยังโหลดไม่เสร็จ ลองใหม่อีกครั้ง' : 'สร้างไฟล์ Excel ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่';
+  }
+  btn.disabled = false;
+});
+
 
 // Share links: each view lists only the areas below it (region → ภาค/เขต/ตำบล, ภาค → เขต/ตำบล, เขต → ตำบล).
 (function () {
-  const sec = document.getElementById('share-section');
+  const dlg = document.getElementById('share-dlg'), mShare = document.getElementById('m-share');
   if (AREA === false || ALV >= 3) return;
   const all = Object.entries(window.SD_AREAS || {});
   const under = ([, a]) => (!AREA || (a.phak === AREA.phak && (!AREA.khet || a.khet === AREA.khet))) && (a.tambon ? 3 : a.khet ? 2 : 1) > ALV;
@@ -448,7 +556,11 @@ document.querySelectorAll('.exp-btn[data-target]').forEach(btn => btn.addEventLi
     const ok = await copy(items.map(([code, a]) => nameOf(a) + '\n' + linkOf(code)).join('\n\n'));
     say(ok ? 'คัดลอก ' + items.length + ' ลิงก์แล้ว' : 'คัดลอกไม่ได้ ลองกดค้างที่ลิงก์แทน');
   });
-  sec.hidden = false;
+  mShare.hidden = false;
+  mShare.addEventListener('click', () => { closeMenu(); if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', ''); });
+  document.getElementById('share-close').addEventListener('click', () => dlg.close ? dlg.close() : dlg.removeAttribute('open'));
+  // Tap on the dimmed backdrop closes it.
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
 })();
 
 dash.onData(() => {
