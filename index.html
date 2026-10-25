@@ -104,6 +104,10 @@
 [data-dash-source-state=refreshing]{opacity:.5;transition:opacity var(--cds-dur-slow)}
 .sd .fail{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--color-fg-muted);font-size:var(--sd-fs);min-height:inherit}
 .sd [hidden]{display:none !important}
+.sd.lock{max-width:28rem;margin:12vh auto 0}
+.sd .lock-row{display:flex;gap:var(--cds-gap-sm)}
+.sd .lock-row input{flex:1;min-width:0;font:inherit;font-size:var(--sd-h);padding:var(--cds-pad-sm) var(--cds-pad-md);border-radius:var(--cds-radius);border:1px solid var(--color-border-line);background:var(--color-bg);color:var(--color-fg)}
+.sd .lock-row .exp-btn{font-size:var(--sd-fs);padding:var(--cds-pad-sm) var(--cds-pad-lg)}
 .sd .hd-row{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--cds-gap-md)}
 .sd .menu{position:relative;flex:none}
 .sd .menu summary{list-style:none;cursor:pointer;font-size:var(--sd-fs);padding:var(--cds-pad-xs) var(--cds-pad-md);border-radius:999px;border:1px solid var(--color-border-line);background:var(--color-panel);color:var(--color-fg);white-space:nowrap}
@@ -210,14 +214,28 @@
 </div>
 
 <script>
-// Area link (areas.js): AREA is null for the whole region; ALV is how deep it goes (0 region, 1 ภาค, 2 เขต, 3 ตำบล).
+// Area link (areas.js): AREA is null for the whole region, false when locked; ALV is how deep it goes (0 region, 1 ภาค, 2 เขต, 3 ตำบล).
 const AREA = window.SD_AREA;
 const ALV = !AREA ? 0 : AREA.tambon ? 3 : AREA.khet ? 2 : 1;
 const AREA_NAME = !AREA ? 'รวมภาคกรุงเทพ 11' : AREA.tambon ? 'ตำบล' + AREA.tambon : AREA.khet ? 'เขต' + AREA.khet : 'ภาค' + AREA.phak;
+// GitHub Pages turns <site>/<code> into the area page (via 404.html); elsewhere only ?a= works.
+const linkOf = code => location.origin + location.pathname.replace(/[^/]*$/, '') + (location.hostname.endsWith('github.io') ? '' : '?a=') + encodeURIComponent(code);
 if (AREA === false) {
+  // No code, or a wrong one: show only a code box. Nothing is fetched (see dash.js).
   const app = document.querySelector('.app'); app.hidden = true;
-  app.insertAdjacentHTML('beforebegin', '<div class="sd"><div class="card"><h1>ไม่พบรหัสนี้</h1><p class="note">ลิงก์อาจพิมพ์ผิด หรือรหัสถูกเปลี่ยนแล้ว ลองขอลิงก์ใหม่อีกครั้ง</p></div></div>');
-  document.title = 'ไม่พบรหัส · Dashboard รวมภาค 11';
+  const bad = !!window.SD_CODE;
+  app.insertAdjacentHTML('beforebegin', `<div class="sd lock"><form class="card" id="lock-form">
+    <h1>สนทนาธรรม 4 ฝ่าย รวมภาคกรุงเทพ 11</h1>
+    <p class="note">${bad ? '<span class="red">ไม่พบรหัสนี้</span> ลองตรวจสอบอีกครั้ง หรือขอลิงก์ใหม่' : 'ใส่รหัสพื้นที่เพื่อเข้าดูข้อมูล'}</p>
+    <div class="lock-row"><input id="lock-code" name="code" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="รหัส" aria-label="รหัส" required><button type="submit" class="exp-btn">เข้าดู</button></div>
+  </form></div>`);
+  document.getElementById('lock-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const c = document.getElementById('lock-code').value.trim().toLowerCase();
+    if (c) location.href = linkOf(c);
+  });
+  document.getElementById('lock-code').focus();
+  document.title = 'ใส่รหัส · Dashboard รวมภาค 11';
 } else if (AREA) {
   document.getElementById('page-title').textContent = 'สนทนาธรรม 4 ฝ่าย ' + AREA_NAME;
   const sub = document.getElementById('page-sub');
@@ -519,11 +537,8 @@ document.getElementById('m-xlsx').addEventListener('click', async e => {
   if (AREA === false || ALV >= 3) return;
   const all = Object.entries(window.SD_AREAS || {});
   const under = ([, a]) => (!AREA || (a.phak === AREA.phak && (!AREA.khet || a.khet === AREA.khet))) && (a.tambon ? 3 : a.khet ? 2 : 1) > ALV;
-  const items = all.filter(under);
+  const items = all.filter(e => !e[1].region && under(e));
   if (!items.length) return;
-  // GitHub Pages turns <site>/<code> into the area page (via 404.html); elsewhere only ?a= works.
-  const dir = location.origin + location.pathname.replace(/[^/]*$/, '');
-  const linkOf = code => location.hostname.endsWith('github.io') ? dir + code : dir + '?a=' + code;
   const nameOf = a => a.tambon ? 'ตำบล' + a.tambon : a.khet ? 'เขต' + a.khet : 'ภาค' + a.phak;
   const lvOf = a => a.tambon ? 3 : a.khet ? 2 : 1;
   const th = (x, y) => x.localeCompare(y, 'th');

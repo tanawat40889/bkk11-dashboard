@@ -1,7 +1,8 @@
 // One link per area: <site>/<code> (or <site>/?a=<code>, which also works when run locally).
-// The page then loads only that area's rows. To add an area, add a line with a new random code.
-// Note: the data files are still public, so a code only hides other areas from the page, it does not secure them.
+// The page then loads only that area's rows; without a code it asks for one. To add an area, add a line with a new random code.
+// Note: the data files are still public, so a code only hides data from the page, it does not secure it.
 window.SD_AREAS = {
+  'vjfput4h': { region: true },
   'u9fibc': { phak: 'บางขุนเทียน' },
   'ztt5zs': { phak: 'บางบอน' },
   'vi5bu6': { phak: 'บางขุนเทียน', khet: 'การเคหะ' },
@@ -39,5 +40,6 @@ window.SD_AREAS = {
   // p=1 means 404.html redirected <site>/<code> here: put the short address back in the bar.
   if (code && qs.get('p') === '1') { try { history.replaceState(null, '', location.pathname.replace(/[^/]*$/, '') + code + location.hash); } catch (e) {} }
   window.SD_CODE = code;
-  window.SD_AREA = code ? (window.SD_AREAS[code] || false) : null; // null = whole region, false = unknown code
+  const hit = code && Object.prototype.hasOwnProperty.call(window.SD_AREAS, code) ? window.SD_AREAS[code] : null;
+  window.SD_AREA = !hit ? false : hit.region ? null : hit; // null = whole region, false = no code or an unknown one
 })();
