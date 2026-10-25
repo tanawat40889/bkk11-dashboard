@@ -153,7 +153,7 @@
       <div class="menu-box" role="menu">
         <button type="button" role="menuitem" id="m-share" hidden>🔗 ลิงก์สำหรับแชร์พื้นที่<span class="hint">ส่งลิงก์ให้พื้นที่ย่อยดูข้อมูลของตัวเอง</span></button>
         <button type="button" role="menuitem" id="m-capture">📷 บันทึกภาพทั้งหน้า<span class="hint">ไฟล์ PNG ของ dashboard ทั้งหมด</span></button>
-        <button type="button" role="menuitem" id="m-xlsx">📊 Export ข้อมูลเป็น Excel<span class="hint">ไฟล์ .xlsx รายเดือน รายพื้นที่ และข้อมูลดิบ</span></button>
+        <button type="button" role="menuitem" id="m-xlsx">📊 Export ข้อมูลเป็น Excel<span class="hint">ไฟล์ .xlsx รายเดือน รายพื้นที่ แยก tab รายเขต และข้อมูลดิบ</span></button>
       </div>
     </details>
   </header>
@@ -507,6 +507,22 @@ function buildWorkbook(X) {
   keep.sort((x, y) => lvDepth[y.level] - lvDepth[x.level] || th(x.phak, y.phak) || th(x.khet, y.khet) || y.total - x.total);
   for (const r of keep) tRows.push([lvName[r.level], r.phak || '', r.khet || '', r.name, ...vk.map(c => num(r[c])), num(r.p_total), num(r.yoy), num(r.tokan), num(r.rate), num(r.trend), num(r.trend_new)]);
   X.utils.book_append_sheet(wb, sheet(tRows, [8, 14, 14, 22, ...vk.map(() => 12), 14, 12, 10, 14, 16, 18]), 'รายพื้นที่ (เฉลี่ย)');
+
+  // One tab per เขต: each month of both years, a row per ตำบล and a รวมเขต row after them.
+  const khets = [];
+  for (const r of [...a.data, ...a68.data]) if (!khets.some(k => k.phak === r.phak && k.khet === r.khet)) khets.push({ phak: r.phak, khet: r.khet });
+  for (const k of khets) {
+    const kr = [['ปี', 'เดือน', 'ตำบล', ...vn]];
+    for (const [yr, src] of [[2569, a.data], [2568, a68.data]]) {
+      const rs = src.filter(r => r.phak === k.phak && r.khet === k.khet);
+      for (const mo of [...new Set(rs.map(r => r.month))].sort((x, y) => x - y)) {
+        const ms = rs.filter(r => r.month === mo).sort((x, y) => th(x.tambon, y.tambon));
+        for (const r of ms) kr.push([yr, r.month_name, r.tambon, ...vk.map(c => num(Number(r[c])))]);
+        if (ms.length > 1) kr.push([yr, ms[0].month_name, 'รวมเขต' + k.khet, ...vk.map(c => ms.reduce((s, r) => s + (Number(r[c]) || 0), 0))]);
+      }
+    }
+    X.utils.book_append_sheet(wb, sheet(kr, [6, 8, 22, ...vk.map(() => 9)]), 'เขต' + k.khet);
+  }
 
   const raw = (rows, yr) => [['ปี', 'เดือน', 'ภาค', 'เขต', 'ตำบล', ...vn], ...rows.slice().sort((x, y) => x.month - y.month || th(x.phak, y.phak) || th(x.khet, y.khet) || th(x.tambon, y.tambon))
     .map(r => [yr, r.month_name, r.phak, r.khet, r.tambon, ...vk.map(c => num(Number(r[c])))])];
