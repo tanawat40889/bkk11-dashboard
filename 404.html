@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard รวมภาค 11</title>
+<script>
+// GitHub Pages has no routing: <site>/<code> lands here, so hand the path to the dashboard page.
+(function () {
+  const parts = location.pathname.replace(/\/+$/, '').split('/').filter(Boolean);
+  const onPages = location.hostname.endsWith('github.io');
+  const base = onPages && parts.length ? '/' + parts[0] + '/' : '/';
+  const rest = onPages ? parts.slice(1) : parts;
+  if (rest.length !== 1) return;
+  location.replace(base + '?a=' + rest[0] + '&p=1');
+})();
+</script>
+</head>
+<body style="font-family:system-ui,sans-serif;padding:16px">
+<p>ไม่พบหน้านี้</p>
+</body>
+</html>

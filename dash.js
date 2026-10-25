@@ -19,11 +19,17 @@
   };
   const run = fn => { try { fn(); } catch (e) { console.error(e); } };
 
+  // An area link (see areas.js) keeps only that area's rows, so every calc and chart sees just that area.
+  const area = window.SD_AREA;
+  const inArea = r => !area || ((!area.phak || r.phak === area.phak) && (!area.khet || r.khet === area.khet) &&
+    (!area.tambon || (r.tambon != null ? r.tambon : r.tambon_key).replace(/\s/g, '') === area.tambon.replace(/\s/g, '')));
+
   Object.keys(SRC).forEach(id => {
     ds[id] = { status: 'loading', data: [] };
+    if (area === false) { ds[id] = { status: 'error', data: [] }; return; }
     fetch(SRC[id])
       .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(x => { ds[id] = { status: 'ok', data: x }; })
+      .then(x => { ds[id] = { status: 'ok', data: Array.isArray(x) ? x.filter(inArea) : x }; })
       .catch(e => { console.error(id, e); ds[id] = { status: 'error', data: [] }; })
       .then(notify);
   });
