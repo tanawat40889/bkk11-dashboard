@@ -103,6 +103,20 @@
 [data-dash-source-state=refreshing]{opacity:.5;transition:opacity var(--cds-dur-slow)}
 .sd .fail{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--color-fg-muted);font-size:var(--sd-fs);min-height:inherit}
 .sd [hidden]{display:none !important}
+.sd .share summary{cursor:pointer;list-style:none}
+.sd .share summary::-webkit-details-marker{display:none}
+.sd .share summary h2{display:inline;margin:0}
+.sd .share summary::after{content:" ▾";color:var(--color-fg-muted)}
+.sd .share[open] summary::after{content:" ▴"}
+.sd .share-acts{display:flex;flex-wrap:wrap;align-items:center;gap:var(--cds-gap-sm);margin:var(--cds-gap-md) 0}
+.sd .share-list{display:flex;flex-direction:column}
+.sd .share-row{display:flex;align-items:center;gap:var(--cds-gap-sm);padding:var(--cds-pad-sm) 0;border-bottom:1px solid var(--color-border-line);min-width:0}
+.sd .share-row.lv1{font-weight:var(--cds-font-weight-medium);font-size:var(--sd-h)}
+.sd .share-row.lv2{padding-left:1.2em;font-weight:var(--cds-font-weight-medium)}
+.sd .share-row.lv3{padding-left:2.6em}
+.sd .share-row .nm{flex:none}
+.sd .share-row .url{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--color-fg-muted);font-size:calc(var(--sd-fs) * .85);font-weight:400}
+.sd .share-row .exp-btn{flex:none}
 .sd .fail::before{content:"";width:.375rem;height:.375rem;border-radius:50%;background:var(--color-bad)}
 </style>
 
@@ -160,6 +174,13 @@
       </table>
     </div>
   </section>
+
+  <details class="card share no-export" id="share-section" hidden>
+    <summary><h2>🔗 แชร์ลิงก์ให้พื้นที่ย่อย</h2></summary>
+    <p class="note">แต่ละลิงก์เปิดแล้วจะเห็นเฉพาะข้อมูลของพื้นที่นั้น และแชร์ต่อให้พื้นที่ย่อยลงไปได้</p>
+    <div class="share-acts"><button type="button" class="exp-btn" id="share-all">คัดลอกทั้งหมด</button><span class="note" id="share-msg" style="margin:0"></span></div>
+    <div class="share-list" id="share-list"></div>
+  </details>
 </div>
 </div>
 </div>
@@ -353,7 +374,7 @@ function failRow(tbody, n) { tbody.replaceChildren(); const tr = tbody.insertRow
 let DL = null;
 try { window.claude && window.claude.use && window.claude.use('downloads').then(x => { DL = x; }).catch(() => {}); } catch (e) {}
 const stamp = () => { const d = new Date(); const p = (n) => String(n).padStart(2, '0'); return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()); };
-document.querySelectorAll('.exp-btn').forEach(btn => btn.addEventListener('click', async () => {
+document.querySelectorAll('.exp-btn[data-target]').forEach(btn => btn.addEventListener('click', async () => {
   const sec = document.getElementById(btn.dataset.target), out = sec.querySelector('.exp-out');
   const filename = 'สนทนาธรรม-' + (AREA ? AREA_NAME + '-' : '') + btn.dataset.name + '-' + stamp() + '.png';
   out.replaceChildren(); btn.disabled = true; const label = btn.textContent; btn.textContent = 'กำลังสร้างภาพ…';
@@ -383,6 +404,52 @@ document.querySelectorAll('.exp-btn').forEach(btn => btn.addEventListener('click
   }
   btn.disabled = false; btn.textContent = label;
 }));
+
+// Share links: each view lists only the areas below it (region → ภาค/เขต/ตำบล, ภาค → เขต/ตำบล, เขต → ตำบล).
+(function () {
+  const sec = document.getElementById('share-section');
+  if (AREA === false || ALV >= 3) return;
+  const all = Object.entries(window.SD_AREAS || {});
+  const under = ([, a]) => (!AREA || (a.phak === AREA.phak && (!AREA.khet || a.khet === AREA.khet))) && (a.tambon ? 3 : a.khet ? 2 : 1) > ALV;
+  const items = all.filter(under);
+  if (!items.length) return;
+  // GitHub Pages turns <site>/<code> into the area page (via 404.html); elsewhere only ?a= works.
+  const dir = location.origin + location.pathname.replace(/[^/]*$/, '');
+  const linkOf = code => location.hostname.endsWith('github.io') ? dir + code : dir + '?a=' + code;
+  const nameOf = a => a.tambon ? 'ตำบล' + a.tambon : a.khet ? 'เขต' + a.khet : 'ภาค' + a.phak;
+  const lvOf = a => a.tambon ? 3 : a.khet ? 2 : 1;
+  const th = (x, y) => x.localeCompare(y, 'th');
+  items.sort(([, a], [, b]) => th(a.phak, b.phak) || th(a.khet || '', b.khet || '') || th(a.tambon || '', b.tambon || ''));
+  const msg = document.getElementById('share-msg');
+  let msgT = 0;
+  const say = t => { msg.textContent = t; clearTimeout(msgT); msgT = setTimeout(() => { msg.textContent = ''; }, 2500); };
+  const copy = async text => {
+    try { await navigator.clipboard.writeText(text); return true; } catch (e) {}
+    // Fallback for browsers that block the clipboard API (older phones, non-https).
+    const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+    ta.remove(); return ok;
+  };
+  const list = document.getElementById('share-list');
+  for (const [code, a] of items) {
+    const row = document.createElement('div'); row.className = 'share-row lv' + (lvOf(a) - ALV);
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = nameOf(a);
+    const url = document.createElement('a'); url.className = 'url'; url.href = linkOf(code); url.textContent = linkOf(code); url.target = '_blank'; url.rel = 'noopener';
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'exp-btn'; btn.textContent = 'คัดลอก';
+    btn.addEventListener('click', async () => {
+      const ok = await copy(nameOf(a) + '\n' + linkOf(code));
+      btn.textContent = ok ? 'คัดลอกแล้ว ✓' : 'คัดลอกไม่ได้';
+      setTimeout(() => { btn.textContent = 'คัดลอก'; }, 2000);
+    });
+    row.append(nm, url, btn); list.appendChild(row);
+  }
+  document.getElementById('share-all').addEventListener('click', async () => {
+    const ok = await copy(items.map(([code, a]) => nameOf(a) + '\n' + linkOf(code)).join('\n\n'));
+    say(ok ? 'คัดลอก ' + items.length + ' ลิงก์แล้ว' : 'คัดลอกไม่ได้ ลองกดค้างที่ลิงก์แทน');
+  });
+  sec.hidden = false;
+})();
 
 dash.onData(() => {
   const scope = dash.params().scope || 'รวมภาค';
