@@ -6,6 +6,7 @@
 <title>Dashboard รวมภาค 11</title>
 <link rel="stylesheet" href="dash.css">
 <script src="areas.js"></script>
+<script src="tree.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 </head>
 <body>
@@ -217,7 +218,7 @@
 // Area link (areas.js): AREA is null for the whole region, false when locked; ALV is how deep it goes (0 region, 1 ภาค, 2 เขต, 3 ตำบล).
 const AREA = window.SD_AREA;
 const ALV = !AREA ? 0 : AREA.tambon ? 3 : AREA.khet ? 2 : 1;
-const AREA_NAME = !AREA ? 'รวมภาคกรุงเทพ 11' : AREA.tambon ? 'ตำบล' + AREA.tambon : AREA.khet ? 'เขต' + AREA.khet : 'ภาค' + AREA.phak;
+let AREA_NAME = !AREA ? 'รวมภาคกรุงเทพ 11' : AREA.tambon ? 'ตำบล' + AREA.tambon : AREA.khet ? 'เขต' + AREA.khet : 'ภาค' + AREA.phak;
 // GitHub Pages turns <site>/<code> into the area page (via 404.html); elsewhere only ?a= works.
 const linkOf = code => location.origin + location.pathname.replace(/[^/]*$/, '') + (location.hostname.endsWith('github.io') ? '' : '?a=') + encodeURIComponent(code);
 if (AREA === false) {
@@ -237,11 +238,16 @@ if (AREA === false) {
   document.getElementById('lock-code').focus();
   document.title = 'ใส่รหัส · Dashboard รวมภาค 11';
 } else if (AREA) {
-  document.getElementById('page-title').textContent = 'สนทนาธรรม 4 ฝ่าย ' + AREA_NAME;
-  const sub = document.getElementById('page-sub');
-  sub.textContent = ALV === 3 ? 'เขต' + AREA.khet + ' · ภาค' + AREA.phak : ALV === 2 ? 'ภาค' + AREA.phak : 'รวมภาคกรุงเทพ 11';
-  sub.hidden = false;
-  document.title = AREA_NAME + ' · Dashboard รวมภาค 11';
+  // also re-run once dash.js has made the link's names canonical (the area tree may spell them differently from areas.js)
+  window.SD_PAINT_AREA = () => {
+    AREA_NAME = AREA.tambon ? 'ตำบล' + AREA.tambon : AREA.khet ? 'เขต' + AREA.khet : 'ภาค' + AREA.phak;
+    document.getElementById('page-title').textContent = 'สนทนาธรรม 4 ฝ่าย ' + AREA_NAME;
+    const sub = document.getElementById('page-sub');
+    sub.textContent = ALV === 3 ? 'เขต' + AREA.khet + ' · ภาค' + AREA.phak : ALV === 2 ? 'ภาค' + AREA.phak : 'รวมภาคกรุงเทพ 11';
+    sub.hidden = false;
+    document.title = AREA_NAME + ' · Dashboard รวมภาค 11';
+  };
+  window.SD_PAINT_AREA();
 }
 const F = [['md','ผช'],['wd','ผญ'],['ymd','ยช'],['ywd','ยญ'],['mb','มช'],['mg','มญ'],['new','เพื่อนสมาชิกใหม่']];
 window.SD_F = F;
@@ -363,7 +369,9 @@ dash.calc('tambon', {
   }
 });
 
+// fallback order; replaced by the area tree's order (sort_order) once it loads
 const PHAKS = ['บางขุนเทียน','บางบอน'];
+SD_TREE.ready.then(() => { if (SD_TREE.phaks.length) PHAKS.splice(0, PHAKS.length, ...SD_TREE.phaks); });
 // "รวมภาค" is the calc's name for "everything loaded", which on an area link is just that area.
 const scopes = ALV === 0 ? ['รวมภาค', ...PHAKS] : [];
 const btnBox = document.getElementById('scope-btns');

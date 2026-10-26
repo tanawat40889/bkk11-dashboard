@@ -24,11 +24,31 @@
   const inArea = r => !area || ((!area.phak || r.phak === area.phak) && (!area.khet || r.khet === area.khet) &&
     (!area.tambon || (r.tambon != null ? r.tambon : r.tambon_key).replace(/\s/g, '') === area.tambon.replace(/\s/g, '')));
 
+  // Names are made canonical (spelling, spaces, aliases) from the shared area tree before anything is filtered or grouped.
+  const T = window.SD_TREE || { ready: Promise.resolve(), ok: false, canon: {} };
+  let areaSynced = false;
+  function syncArea() {
+    if (areaSynced || !area) return;
+    areaSynced = true;
+    if (area.phak) area.phak = T.canon.phak(area.phak);
+    if (area.khet) area.khet = T.canon.khet(area.khet, area.phak);
+    if (area.tambon) area.tambon = T.canon.tambon(area.tambon, area.khet);
+    if (window.SD_PAINT_AREA) window.SD_PAINT_AREA();
+  }
+  function canonRow(r) {
+    if (!T.ok || !r || typeof r !== 'object') return r;
+    const phak = T.canon.phak(r.phak), khet = T.canon.khet(r.khet, phak), o = { ...r, phak, khet };
+    if (r.tambon != null) o.tambon = T.canon.tambon(r.tambon, khet);
+    if (r.tambon_key != null) o.tambon_key = T.canon.tambon(r.tambon_key, khet).replace(/\s/g, '');  // the page compares this one with spaces removed
+    return o;
+  }
+
   Object.keys(SRC).forEach(id => {
     ds[id] = { status: 'loading', data: [] };
     if (area === false) { ds[id] = { status: 'error', data: [] }; return; }
     fetch(SRC[id])
       .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(x => T.ready.then(() => { syncArea(); return Array.isArray(x) ? x.map(canonRow) : x; }))
       .then(x => { ds[id] = { status: 'ok', data: Array.isArray(x) ? x.filter(inArea) : x }; })
       .catch(e => { console.error(id, e); ds[id] = { status: 'error', data: [] }; })
       .then(notify);
