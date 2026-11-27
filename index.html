@@ -161,10 +161,10 @@
   <div class="exp-out no-export" id="top-out"></div>
 
   <section class="tiles" id="kpis">
-    <div class="card tile"><div class="lab">ผู้เข้าร่วมรวม 10 เดือน (คน)</div><div class="big dash-skeleton" data-source="kpi" data-field="total">—</div><div class="sub">จำนวนคนสะสม</div><div class="yoy dash-skeleton" data-source="kpi" data-field="total_yoy">—</div></div>
-    <div class="card tile"><div class="lab">เฉลี่ยต่อเดือน (คน)</div><div class="big dash-skeleton" data-source="kpi" data-field="avg">—</div><div class="sub">ม.ค.–ต.ค.</div><div class="yoy dash-skeleton" data-source="kpi" data-field="avg_yoy">—</div></div>
+    <div class="card tile"><div class="lab">ผู้เข้าร่วมรวม <span data-source="kpi" data-field="n_months">–</span> เดือน (คน)</div><div class="big dash-skeleton" data-source="kpi" data-field="total">—</div><div class="sub">จำนวนคนสะสม</div><div class="yoy dash-skeleton" data-source="kpi" data-field="total_yoy">—</div></div>
+    <div class="card tile"><div class="lab">เฉลี่ยต่อเดือน (คน)</div><div class="big dash-skeleton" data-source="kpi" data-field="avg">—</div><div class="sub" data-source="kpi" data-field="span">—</div><div class="yoy dash-skeleton" data-source="kpi" data-field="avg_yoy">—</div></div>
     <div class="card tile"><div class="lab">เดือนที่สูงสุด (คน)</div><div class="big dash-skeleton" data-source="kpi" data-field="peak_total">—</div><div class="sub dash-skeleton" data-source="kpi" data-field="peak_month">—</div><div class="yoy dash-skeleton" data-source="kpi" data-field="peak_yoy">—</div></div>
-    <div class="card tile"><div class="lab">เดือนล่าสุด ต.ค. (คน)</div><div class="big dash-skeleton" data-source="kpi" data-field="last_total">—</div><div class="sub dash-skeleton" data-source="kpi" data-field="last_delta_text">—</div><div class="yoy dash-skeleton" data-source="kpi" data-field="last_yoy">—</div></div>
+    <div class="card tile"><div class="lab">เดือนล่าสุด <span data-source="kpi" data-field="last_month"></span> (คน)</div><div class="big dash-skeleton" data-source="kpi" data-field="last_total">—</div><div class="sub dash-skeleton" data-source="kpi" data-field="last_delta_text">—</div><div class="yoy dash-skeleton" data-source="kpi" data-field="last_yoy">—</div></div>
   </section>
 
   <section class="card" id="monthly-section">
@@ -187,7 +187,7 @@
 
 
   <section class="card" id="tambon-section">
-    <div class="sec-head"><h2 id="tb-title">รายตำบล · เฉลี่ยต่อเดือน (ม.ค.–ต.ค.)</h2><button type="button" class="exp-btn no-export" data-target="tambon-section" data-name="รายตำบล">📷 บันทึกเป็นภาพ</button></div>
+    <div class="sec-head"><h2 id="tb-title">รายตำบล · เฉลี่ยต่อเดือน</h2><button type="button" class="exp-btn no-export" data-target="tambon-section" data-name="รายตำบล">📷 บันทึกเป็นภาพ</button></div>
     <div class="exp-out no-export"></div>
     <div class="tb-tools"><div class="seg" id="level-btns" role="group" aria-label="เลือกระดับ"></div>
     <details class="colmgr no-export"><summary>เลือกคอลัมน์</summary><div class="colmgr-box"><div class="colmgr-acts"><button type="button" id="col-all">แสดงทั้งหมด</button><button type="button" id="col-none">ซ่อนทั้งหมด</button></div><div id="colmgr-list"></div></div></details></div>
@@ -314,6 +314,7 @@ dash.calc('kpi', {
     const pc = (a, b) => { const v = (a / b - 1) * 100; return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; };
     const span = ms[0].month_name + '–' + last.month_name;
     return [{
+      n_months: ms.length, span, last_month: last.month_name,
       total: f(sum.total),
       total_yoy: 'ปี 2568 ช่วงเดียวกัน ' + f(sum.p_total) + ' (' + pc(sum.total, sum.p_total) + ')',
       avg: f(Math.round(sum.total / ms.length)),
@@ -778,7 +779,8 @@ dash.onData(() => {
     const lvName = (LEVELS.find(x => x[0] === lv) || LEVELS[0])[1];
     lvBox.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === lv)));
     document.getElementById('tb-namehead').textContent = lvName;
-    document.getElementById('tb-title').textContent = 'ราย' + lvName + ' · เฉลี่ยต่อเดือน (ม.ค.–ต.ค.)';
+    const kp = dash.data('kpi'), sp = kp.status === 'ok' && kp.data[0] ? ' (' + kp.data[0].span + ')' : '';
+    document.getElementById('tb-title').textContent = 'ราย' + lvName + ' · เฉลี่ยต่อเดือน' + sp;
     const head = (text, cls) => { const g = tt.insertRow(); g.className = cls; const c = g.insertCell(); c.colSpan = 15; c.textContent = text; };
     const byTotal = (a,b) => b.total - a.total;
     if (lv === 'phak') D.filter(r => r.level === 'phak').sort(byTotal).forEach(r => row(r));

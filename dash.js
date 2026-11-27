@@ -1,10 +1,30 @@
 // Minimal local runtime for the dashboard page: datasets, calcs, params.
 // Mirrors the `dash` API the page scripts were written against.
 (function () {
+  // Attendance lives in Supabase (table public.sd_attendance, public read, written by the monthly run). YEAR is the พ.ศ. year on show.
+  const BASE = 'https://cqdzfsucpivsgznfpjxl.supabase.co/rest/v1/';
+  const KEY = 'sb_publishable_XkUBjE3M7HUiuDv7YwsbKA_mSu0ToEc';
+  const YEAR = 2569;
+  const MN = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+  const json = r => { if (!r.ok) throw new Error(r.status); return r.json(); };
+  // Row order sets the order of เขต and ตำบล in the lists: the order of the monthly Excel sheets. A ตำบล not listed here goes last.
+  const ORDER = ['สินทวี', 'จุลพงษ์', 'พระราม 2', 'มั่งมี', 'ศรัญญา', 'เคหะรุ่งโรจน์', 'เทียนทะเล', 'มีสุข', 'พิศาล', 'วงแหวนชัชวาลย์', 'เพชรทองคำ',
+    'แม้นทอง', 'ปิ่นทอง', 'ไทรทอง', 'เอสเค', 'ศิริชัย', 'ดีเค', 'พระปิ่น 5', 'ศึกษานารี'].map(s => s.replace(/\s/g, ''));
+  const pos = r => { const i = ORDER.indexOf(String(r.tambon).replace(/\s/g, '')); return i < 0 ? ORDER.length : i; };
+  const att = (year, withYear) => () =>
+    fetch(BASE + 'sd_attendance?select=month,phak,khet,tambon,md,wd,ymd,ywd,mb,mg,new:newcomers,total&year=eq.' + year + '&order=month',
+      { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY } })
+      .then(json)
+      .then(rows => rows.sort((x, y) => x.month - y.month || pos(x) - pos(y)).map(r => {
+        const o = withYear ? { year } : {};
+        o.month = r.month; o.month_name = MN[r.month - 1];
+        for (const k of ['phak', 'khet', 'tambon', 'md', 'wd', 'ymd', 'ywd', 'mb', 'mg', 'new', 'total']) o[k] = r[k];
+        return o;
+      }));
   const SRC = {
-    attendance: 'data/attendance.json',
-    attendance68: 'data/attendance68.json',
-    tokan: 'data/tokan.json',
+    attendance: att(YEAR, false),
+    attendance68: att(YEAR - 1, true),
+    tokan: () => fetch('data/tokan.json').then(json),
   };
   const ds = {}, calcs = {}, subs = [];
   let params = {}, pending = false;
@@ -46,8 +66,7 @@
   Object.keys(SRC).forEach(id => {
     ds[id] = { status: 'loading', data: [] };
     if (area === false) { ds[id] = { status: 'error', data: [] }; return; }
-    fetch(SRC[id])
-      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    SRC[id]()
       .then(x => T.ready.then(() => { syncArea(); return Array.isArray(x) ? x.map(canonRow) : x; }))
       .then(x => { ds[id] = { status: 'ok', data: Array.isArray(x) ? x.filter(inArea) : x }; })
       .catch(e => { console.error(id, e); ds[id] = { status: 'error', data: [] }; })

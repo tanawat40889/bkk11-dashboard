@@ -1,6 +1,6 @@
 // One link per area: <site>/<code> (or <site>/?a=<code>, which also works when run locally).
 // The page then loads only that area's rows; without a code it asks for one. To add an area, add a line with a new random code.
-// Note: the data files are still public, so a code only hides data from the page, it does not secure it.
+// Note: the attendance table is public read, so a code only hides data from the page, it does not secure it.
 window.SD_AREAS = {
   'vjfput4h': { region: true },
   'u9fibc': { phak: 'บางขุนเทียน' },
